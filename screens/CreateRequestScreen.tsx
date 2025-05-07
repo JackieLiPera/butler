@@ -1,36 +1,29 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
   TextInput,
-  Button,
+  Image,
   StyleSheet,
   Pressable,
 } from "react-native";
 import Slider from "@react-native-community/slider";
 import { Ionicons } from "@expo/vector-icons";
-import * as Location from "expo-location";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
-import { FEET_IN_ONE_METER, ONE_MILE_IN_METERS } from "../constants";
-import { collection, addDoc, Timestamp } from "firebase/firestore";
-import { db } from "../firebase/config";
+import { ONE_MILE_IN_METERS } from "../constants";
+import { pickImage, submit, formatRadius } from "../utils";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+} from "react-native";
 
 type CreateRequestScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   "CreateRequest"
 >;
-
-const formatRadius = (meters: number) => {
-  const feet = meters * FEET_IN_ONE_METER;
-  const miles = meters / ONE_MILE_IN_METERS;
-
-  if (miles < 0.25) {
-    return `${Math.round(feet)} ft`;
-  } else {
-    return `${miles.toFixed(1)} mi`;
-  }
-};
 
 export default function CreateRequestScreen({
   navigation,
@@ -40,97 +33,98 @@ export default function CreateRequestScreen({
   const [requestText, setRequestText] = useState("");
   const [radiusMeters, setRadiusMeters] = useState(ONE_MILE_IN_METERS / 2);
   const [payment, setPayment] = useState("");
+  const [imageUri, setImageUri] = useState<string | null>(null);
 
-  const handleSubmit = async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      alert("Permission to access location was denied");
-      return;
-    }
+  const handleSubmit = useCallback(async () => {
+    await submit({ requestText, radiusMeters, payment, imageUri });
+  }, [requestText, radiusMeters, payment]);
 
-    if (!requestText.trim()) {
-      alert("Please enter a request.");
-      return;
-    }
-
-    const location = await Location.getCurrentPositionAsync({});
-
-    const requestData = {
-      requestText,
-      radiusMeters,
-      paymentAmount: payment ? parseInt(payment, 10) : null,
-      location: {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      },
-      createdAt: Timestamp.now(),
-    };
-
-    try {
-      await addDoc(collection(db, "requests"), requestData);
-
-      alert("Request submitted!");
-    } catch (error) {
-      console.error("Error adding document:", error);
-      alert("Something went wrong. Please try again.");
-    }
-  };
+  const handlePickImage = useCallback(async () => {
+    await pickImage({ setImageUri });
+  }, [setImageUri]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerRow}>
-        <Pressable
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Ionicons name="chevron-back" size={28} color="#000" />
-        </Pressable>
-        <Text style={styles.headerText}>Create a Request</Text>
-      </View>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+      >
+        <View style={styles.container}>
+          <View style={styles.headerRow}>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              style={styles.backButton}
+            >
+              <Ionicons name="chevron-back" size={28} color="#000" />
+            </Pressable>
+            <Text style={styles.headerText}>Create a Request</Text>
+          </View>
 
-      <TextInput
-        style={styles.textInput}
-        placeholder="e.g. I’ll pay $10 for someone to bring me coffee from Blue Bottle"
-        multiline
-        value={requestText}
-        onChangeText={(text) => {
-          if (text.length <= 500) {
-            setRequestText(text);
-          }
-        }}
-        maxLength={500}
-      />
-      <Text style={styles.charCount}>{requestText.length}/500</Text>
+          <TextInput
+            style={styles.textInput}
+            placeholder="e.g. I’ll pay $10 for someone to bring me coffee from Blue Bottle"
+            multiline
+            value={requestText}
+            onChangeText={(text) => {
+              if (text.length <= 500) {
+                setRequestText(text);
+              }
+            }}
+            maxLength={500}
+          />
+          <Text style={styles.charCount}>{requestText.length}/500</Text>
 
-      <Text style={styles.label}>Optional Payment ($)</Text>
-      <TextInput
-        style={styles.paymentInput}
-        placeholder="e.g. 10"
-        value={payment}
-        onChangeText={(text) => {
-          const onlyNums = text.replace(/[^0-9]/g, "");
-          setPayment(onlyNums);
-        }}
-        keyboardType="numeric"
-      />
+          <Text style={styles.label}>Optional Payment ($)</Text>
+          <TextInput
+            style={styles.paymentInput}
+            placeholder="e.g. 10"
+            value={payment}
+            onChangeText={(text) => {
+              const onlyNums = text.replace(/[^0-9]/g, "");
+              setPayment(onlyNums);
+            }}
+            keyboardType="numeric"
+          />
 
-      <Text style={styles.label}>Radius: {formatRadius(radiusMeters)}</Text>
-      <Slider
-        style={styles.slider}
-        minimumValue={305} // meters
-        maximumValue={ONE_MILE_IN_METERS * 25}
-        step={50} // meters
-        value={radiusMeters}
-        onValueChange={setRadiusMeters}
-        minimumTrackTintColor="#000"
-        maximumTrackTintColor="#ccc"
-        thumbTintColor="#000"
-      />
+          <Text style={styles.label}>Radius: {formatRadius(radiusMeters)}</Text>
+          <Slider
+            style={styles.slider}
+            minimumValue={1} // meters
+            maximumValue={ONE_MILE_IN_METERS * 25}
+            step={50} // meters
+            value={radiusMeters}
+            onValueChange={setRadiusMeters}
+            minimumTrackTintColor="#000"
+            maximumTrackTintColor="#ccc"
+            thumbTintColor="#000"
+          />
 
-      <View style={styles.buttonWrapper}>
-        <Button title="Submit Request" onPress={handleSubmit} />
-      </View>
-    </View>
+          <Pressable style={styles.uploadBox} onPress={handlePickImage}>
+            {imageUri ? (
+              <Image source={{ uri: imageUri }} style={styles.uploadedImage} />
+            ) : (
+              <View style={styles.uploadPlaceholder}>
+                <Ionicons name="add" size={32} color="#999" />
+                <Text style={styles.uploadText}>Add a picture (optional)</Text>
+              </View>
+            )}
+          </Pressable>
+
+          <View style={styles.buttonContainer}>
+            <Pressable
+              onPress={handleSubmit}
+              style={({ pressed }) => [
+                styles.buttonPressable,
+                pressed && { transform: [{ scale: pressed ? 0.95 : 1 }] },
+              ]}
+            >
+              <Text style={styles.buttonText}>Submit Request</Text>
+            </Pressable>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -172,8 +166,24 @@ const styles = StyleSheet.create({
     height: 40,
     marginBottom: 24,
   },
-  buttonWrapper: {
-    marginTop: 16,
+  buttonContainer: {
+    position: "absolute",
+    bottom: 40,
+    left: 20,
+    right: 20,
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  buttonPressable: {
+    backgroundColor: "black",
+    paddingVertical: 16,
+    alignItems: "center",
+    borderRadius: 12,
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "600",
   },
   headerRow: {
     flexDirection: "row",
@@ -192,5 +202,31 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#999",
     marginBottom: 12,
+  },
+  uploadBox: {
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    minHeight: 180,
+    maxHeight: 250,
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+  },
+  uploadPlaceholder: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  uploadText: {
+    marginTop: 8,
+    color: "#666",
+    fontSize: 14,
+  },
+  uploadedImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
   },
 });

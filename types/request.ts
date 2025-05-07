@@ -9,5 +9,5 @@ export interface Request {
   };
   paymentAmount?: number;
   id: string;
-  radiusMeters: number;
+  radius: { meters: number };
 }

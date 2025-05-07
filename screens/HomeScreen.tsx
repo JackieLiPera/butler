@@ -17,6 +17,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { Request } from "../types/request";
+import { mapStyle } from "../utils";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -68,7 +69,8 @@ export default function HomeScreen({
 
     try {
       await updateDoc(doc(db, "requests", request.id), {
-        acceptedBy: currentUser.uid,
+        // TODO after sign in is complete
+        acceptedBy: currentUser?.uid,
         acceptedAt: Timestamp.now(),
       });
     } catch (e) {
@@ -98,10 +100,12 @@ export default function HomeScreen({
 
   return (
     <View style={styles.container}>
-      <View style={styles.logoContainer}>
-        <Text style={styles.logo}>Butler</Text>
-      </View>
-      <MapView style={styles.map} initialRegion={region}>
+      <MapView
+        style={styles.map}
+        provider="google"
+        initialRegion={region}
+        customMapStyle={mapStyle}
+      >
         <Marker coordinate={{ latitude, longitude }} title="You" />
         <Circle
           center={{ latitude, longitude }}
@@ -149,7 +153,8 @@ export default function HomeScreen({
             </Text>
           )}
           <Text style={styles.panelDetail}>
-            Distance: {(selectedRequest.radiusMeters / 1609.34).toFixed(1)} mi
+            Distance:{" "}
+            {(selectedRequest.radius.meters / ONE_MILE_IN_METERS).toFixed(1)} mi
           </Text>
 
           <Pressable
@@ -170,17 +175,6 @@ export default function HomeScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  logoContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.07)",
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-    alignItems: "center",
-    zIndex: 1,
-  },
-  logo: {
-    fontSize: 32,
-    fontWeight: "bold",
   },
   map: {
     flex: 1,

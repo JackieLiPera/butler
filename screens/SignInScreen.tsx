@@ -27,7 +27,6 @@ export default function SignInScreen({
       setError(err.message);
     }
   };
-  console.log("HELLO WORLD");
 
   return (
     <View>
