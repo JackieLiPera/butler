@@ -3,6 +3,8 @@ export type RootStackParamList = {
   History: undefined;
   Home: undefined;
   Account: undefined;
+  PrivacyPolicy: undefined;
   Profile: undefined;
+  Settings: undefined;
   SignIn: undefined;
 };

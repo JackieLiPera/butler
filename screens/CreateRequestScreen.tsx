@@ -12,7 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
 import { ONE_MILE_IN_METERS } from "../constants";
-import { pickImage, submit, formatRadius } from "../utils";
+import { pickImage, createRequest, formatRadius } from "../utils";
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -35,8 +35,8 @@ export default function CreateRequestScreen({
   const [payment, setPayment] = useState("");
   const [imageUri, setImageUri] = useState<string | null>(null);
 
-  const handleSubmit = useCallback(async () => {
-    await submit({ requestText, radiusMeters, payment, imageUri });
+  const handleCreateRequest = useCallback(async () => {
+    await createRequest({ requestText, radiusMeters, payment, imageUri });
   }, [requestText, radiusMeters, payment]);
 
   const handlePickImage = useCallback(async () => {
@@ -60,7 +60,6 @@ export default function CreateRequestScreen({
             </Pressable>
             <Text style={styles.headerText}>Create a Request</Text>
           </View>
-
           <TextInput
             style={styles.textInput}
             placeholder="e.g. I’ll pay $10 for someone to bring me coffee from Blue Bottle"
@@ -74,7 +73,6 @@ export default function CreateRequestScreen({
             maxLength={500}
           />
           <Text style={styles.charCount}>{requestText.length}/500</Text>
-
           <Text style={styles.label}>Optional Payment ($)</Text>
           <TextInput
             style={styles.paymentInput}
@@ -86,7 +84,6 @@ export default function CreateRequestScreen({
             }}
             keyboardType="numeric"
           />
-
           <Text style={styles.label}>Radius: {formatRadius(radiusMeters)}</Text>
           <Slider
             style={styles.slider}
@@ -99,7 +96,6 @@ export default function CreateRequestScreen({
             maximumTrackTintColor="#ccc"
             thumbTintColor="#000"
           />
-
           <Pressable style={styles.uploadBox} onPress={handlePickImage}>
             {imageUri ? (
               <Image source={{ uri: imageUri }} style={styles.uploadedImage} />
@@ -113,7 +109,7 @@ export default function CreateRequestScreen({
 
           <View style={styles.buttonContainer}>
             <Pressable
-              onPress={handleSubmit}
+              onPress={handleCreateRequest}
               style={({ pressed }) => [
                 styles.buttonPressable,
                 pressed && { transform: [{ scale: pressed ? 0.95 : 1 }] },

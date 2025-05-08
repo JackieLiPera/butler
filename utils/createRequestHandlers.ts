@@ -32,7 +32,7 @@ export const pickImage = async ({
   setImageUri(result.assets[0].uri);
 };
 
-export const submit = async ({
+export const createRequest = async ({
   requestText,
   radiusMeters,
   payment,
@@ -79,6 +79,7 @@ export const submit = async ({
     },
     imageUrl,
     createdAt: Timestamp.now(),
+    acceptedAt: null,
   };
 
   try {

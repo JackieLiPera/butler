@@ -9,13 +9,16 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 const OptionItem = ({
   label,
+  description,
   onPress,
 }: {
   label: string;
+  description?: string;
   onPress: () => void;
 }) => (
   <Pressable onPress={onPress} style={styles.option}>
     <Text style={styles.optionText}>{label}</Text>
+    <Text>{description}</Text>
     {label !== "Log Out" && (
       <Ionicons name="chevron-forward" size={20} color="#999" />
     )}
@@ -47,6 +50,19 @@ export default function ProfileScreen() {
     navigation.navigate("SignIn");
   };
 
+  const items: {
+    label: string;
+    description?: string;
+    route?: keyof RootStackParamList;
+    onPress?: Function;
+  }[] = [
+    { label: "Manage Account", route: "Account" },
+    { label: "Request History", route: "History" },
+    { label: "Notification Settings", route: "Settings" },
+    { label: "Privacy Policy", route: "PrivacyPolicy" },
+    { label: "Log Out", onPress: handleLogout },
+  ];
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -58,15 +74,14 @@ export default function ProfileScreen() {
         />
         <Text style={styles.username}>{profile?.username || "Account"}</Text>
       </View>
-      <OptionItem
-        label="Manage Account"
-        onPress={() => navigation.navigate("Account")}
-      />
-      <OptionItem
-        label="Request History"
-        onPress={() => navigation.navigate("History")}
-      />
-      <OptionItem label="Log Out" onPress={handleLogout} />
+      {items.map(({ label, description, route }) => (
+        <OptionItem
+          key={label}
+          label={label}
+          description={description}
+          onPress={() => navigation.navigate(route!)}
+        />
+      ))}
     </View>
   );
 }

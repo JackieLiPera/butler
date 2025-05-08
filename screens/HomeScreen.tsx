@@ -8,7 +8,7 @@ import { RootStackParamList } from "../types/navigation";
 import { Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { Request } from "../types/request";
 import { acceptRequest, mapStyle } from "../utils";
@@ -30,6 +30,13 @@ export default function HomeScreen({
   const [requests, setRequests] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (location && requests.length > 0) {
+      setReady(true);
+    }
+  }, [location, requests]);
 
   useEffect(() => {
     const init = async () => {
@@ -45,7 +52,10 @@ export default function HomeScreen({
 
     init();
 
-    const unsubscribe = onSnapshot(collection(db, "requests"), (snapshot) => {
+    const requestsRef = collection(db, "requests");
+    const openRequests = query(requestsRef, where("acceptedAt", "==", null));
+
+    const unsubscribe = onSnapshot(openRequests, (snapshot) => {
       const requestsData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -85,6 +95,7 @@ export default function HomeScreen({
         provider="google"
         initialRegion={region}
         customMapStyle={mapStyle}
+        key={ready ? "map-ready" : "map-waiting"}
       >
         <Marker coordinate={{ latitude, longitude }} title="You" />
         <Circle
@@ -93,26 +104,34 @@ export default function HomeScreen({
           strokeColor="rgba(0,0,255,0.5)"
           fillColor="rgba(0,0,255,0.1)"
         />
-        {requests.map((request) => {
-          const { id, location, paymentAmount } = request;
-          return (
-            <Marker
-              pinColor={paymentAmount ? "#228B22" : "#1E90FF"}
-              key={id}
-              coordinate={{
-                latitude: location.latitude,
-                longitude: location.longitude,
-              }}
-              onPress={() => setSelectedRequest(request)}
-            >
-              <Callout tooltip>
-                <View style={styles.calloutBox}>
-                  <Text style={styles.calloutText}>${paymentAmount}</Text>
-                </View>
-              </Callout>
-            </Marker>
-          );
-        })}
+        {ready &&
+          requests.map((request) => {
+            const { id, location, paymentAmount } = request;
+            if (
+              !request.location ||
+              !request.location.latitude ||
+              !request.location.longitude
+            ) {
+              console.warn("⚠️ Skipping invalid marker:", request);
+            }
+            return (
+              <Marker
+                pinColor={paymentAmount ? "#228B22" : "#1E90FF"}
+                key={id}
+                coordinate={{
+                  latitude: location.latitude,
+                  longitude: location.longitude,
+                }}
+                onPress={() => setSelectedRequest(request)}
+              >
+                <Callout tooltip>
+                  <View style={styles.calloutBox}>
+                    <Text style={styles.calloutText}>${paymentAmount}</Text>
+                  </View>
+                </Callout>
+              </Marker>
+            );
+          })}
         <View style={styles.buttonContainer}>
           <Pressable
             onPress={() => {
@@ -130,7 +149,7 @@ export default function HomeScreen({
       </MapView>
 
       {selectedRequest && (
-        <View style={styles.panel}>
+        <View style={styles.viewRequestPanel}>
           <Pressable
             onPress={() => setSelectedRequest(null)}
             style={styles.closeButton}
@@ -188,9 +207,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
   },
-  panel: {
+  viewRequestPanel: {
     position: "absolute",
-    bottom: 20,
+    bottom: 100,
     left: 20,
     right: 20,
     backgroundColor: "white",
