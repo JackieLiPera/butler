@@ -1,23 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
-import MapView, { Marker, Circle, Region } from "react-native-maps";
+import MapView, { Marker, Circle, Region, Callout } from "react-native-maps";
 import * as Location from "expo-location";
 import { ONE_MILE_IN_METERS } from "../constants";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
 import { Pressable } from "react-native";
-import { auth } from "../firebase/config";
+import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import {
-  collection,
-  doc,
-  onSnapshot,
-  Timestamp,
-  updateDoc,
-} from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { Request } from "../types/request";
-import { mapStyle } from "../utils";
+import { acceptRequest, mapStyle } from "../utils";
+import { BottomNav } from "../components/BottomNav";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -35,8 +30,6 @@ export default function HomeScreen({
   const [requests, setRequests] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
-
-  const currentUser = auth.currentUser;
 
   useEffect(() => {
     const init = async () => {
@@ -63,24 +56,11 @@ export default function HomeScreen({
     return () => unsubscribe();
   }, []);
 
-  const handleAccept = async (request: Request) => {
+  const handleAccept = useCallback(async (request: Request) => {
+    await acceptRequest(request);
     alert(`You accepted the request: "${request.requestText}"`);
     setSelectedRequest(null);
-
-    try {
-      await updateDoc(doc(db, "requests", request.id), {
-        // TODO after sign in is complete
-        acceptedBy: currentUser?.uid,
-        acceptedAt: Timestamp.now(),
-      });
-    } catch (e) {
-      alert(
-        `There was an error accepting the request: "${request.requestText}"`
-      );
-
-      console.log(e);
-    }
-  };
+  }, []);
 
   if (error) {
     return <Text>{error}</Text>;
@@ -124,8 +104,13 @@ export default function HomeScreen({
                 longitude: location.longitude,
               }}
               onPress={() => setSelectedRequest(request)}
-              description={paymentAmount ? `$${paymentAmount}` : undefined}
-            />
+            >
+              <Callout tooltip>
+                <View style={styles.calloutBox}>
+                  <Text style={styles.calloutText}>${paymentAmount}</Text>
+                </View>
+              </Callout>
+            </Marker>
           );
         })}
         <View style={styles.buttonContainer}>
@@ -146,6 +131,12 @@ export default function HomeScreen({
 
       {selectedRequest && (
         <View style={styles.panel}>
+          <Pressable
+            onPress={() => setSelectedRequest(null)}
+            style={styles.closeButton}
+          >
+            <Ionicons name="close" size={24} color="#333" />
+          </Pressable>
           <Text style={styles.panelTitle}>{selectedRequest.requestText}</Text>
           {selectedRequest.paymentAmount && (
             <Text style={styles.panelDetail}>
@@ -163,11 +154,10 @@ export default function HomeScreen({
           >
             <Text style={styles.acceptButtonText}>Accept Request</Text>
           </Pressable>
-          <Pressable onPress={() => setSelectedRequest(null)}>
-            <Text style={styles.panelClose}>Close</Text>
-          </Pressable>
         </View>
       )}
+
+      <BottomNav />
     </View>
   );
 }
@@ -181,9 +171,9 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     position: "absolute",
-    bottom: 40,
     left: 20,
     right: 20,
+    bottom: 100, // (BottomNav + 20)
     borderRadius: 12,
     overflow: "hidden",
   },
@@ -212,35 +202,47 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-
   panelTitle: {
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 8,
   },
-
   panelDetail: {
     fontSize: 14,
     marginBottom: 4,
   },
-
-  panelClose: {
-    color: "#007AFF",
-    marginTop: 10,
-    fontWeight: "500",
-    textAlign: "right",
+  closeButton: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    padding: 6,
+    borderRadius: 20,
+    backgroundColor: "#f0f0f0",
   },
   acceptButton: {
     marginTop: 12,
-    backgroundColor: "#007AFF",
+    backgroundColor: "black",
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
   },
-
   acceptButtonText: {
-    color: "#fff",
+    color: "white",
     fontWeight: "600",
     fontSize: 16,
+  },
+  calloutBox: {
+    backgroundColor: "#fff",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    alignItems: "center",
+  },
+  calloutText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#000",
   },
 });
