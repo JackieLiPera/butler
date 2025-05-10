@@ -12,20 +12,15 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { RootStackParamList } from "../types/navigation";
-import { errorMap, signIn, signUp } from "../utils";
+import { checkUsernameAvailability, errorMap, signIn, signUp } from "../utils";
 import { APP_NAME } from "../constants";
 import DateField from "../components/DateField";
+import { useNavigation } from "@react-navigation/native";
 
-type SignInScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "SignIn"
->;
+export default function SignInScreen() {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-export default function SignInScreen({
-  navigation,
-}: {
-  navigation: SignInScreenNavigationProp;
-}) {
   const [error, setError] = useState<string>("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -78,6 +73,8 @@ export default function SignInScreen({
       return;
     }
 
+    if (error) return;
+
     try {
       await signUp({
         firstName,
@@ -97,6 +94,19 @@ export default function SignInScreen({
       }
     }
   }, [firstName, lastName, username, email, birthday, password]);
+
+  const handleCheckUsernameAvailability = useCallback(
+    async (value: string) => {
+      const isAvailable = await checkUsernameAvailability(value);
+
+      if (isAvailable) {
+        setError("");
+      } else {
+        setError("Username is not available. Try again.");
+      }
+    },
+    [setUserName]
+  );
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -157,14 +167,15 @@ export default function SignInScreen({
                     style={styles.input}
                     placeholder="Username *"
                     value={username}
-                    onChangeText={(value) => {
-                      // TODO check for username availability
-                      setUserName(value);
+                    onChangeText={(val) => {
+                      setUserName(val);
                     }}
                     onBlur={() => {
                       if (!username.trim()) {
                         setError("Username is required.");
                       }
+
+                      handleCheckUsernameAvailability(username);
                     }}
                   />
 
@@ -174,7 +185,7 @@ export default function SignInScreen({
                     value={email}
                     onChangeText={(text) => {
                       setEmail(text);
-                      if (error) setError(""); // clear error on change
+                      if (error) setError("");
                     }}
                     onBlur={() => {
                       const trimmed = email.trim();
@@ -214,7 +225,11 @@ export default function SignInScreen({
                     }}
                   />
 
-                  <DateField setDate={setBirthday} />
+                  <DateField
+                    setDate={setBirthday}
+                    initialValue={birthday}
+                    label="Birthday *"
+                  />
 
                   {/* Finish Setting up your profile */}
                   {/* <Pressable
@@ -239,8 +254,12 @@ export default function SignInScreen({
                   {error ? <Text style={styles.error}>{error}</Text> : null}
 
                   <Pressable
-                    style={styles.outlinedButton}
+                    style={() => [
+                      styles.outlinedButton,
+                      Boolean(error) && styles.buttonDisabled,
+                    ]}
                     onPress={handleSignUp}
+                    disabled={Boolean(error)}
                   >
                     <Text style={styles.outlinedButtonText}>
                       Create Account
@@ -255,7 +274,7 @@ export default function SignInScreen({
                     value={email}
                     onChangeText={(text) => {
                       setEmail(text);
-                      if (error) setError(""); // clear error on change
+                      if (error) setError("");
                     }}
                     onBlur={() => {
                       const trimmed = email.trim();
@@ -317,6 +336,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 24,
     backgroundColor: "#fff",
+  },
+  buttonDisabled: {
+    backgroundColor: "#ccc",
+    opacity: 0.3,
   },
   error: {
     color: "red",

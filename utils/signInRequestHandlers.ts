@@ -5,7 +5,15 @@ import {
 } from "firebase/auth";
 import { Dispatch, SetStateAction } from "react";
 import { auth, db } from "../firebase/config";
-import { doc, setDoc, Timestamp } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDocs,
+  query,
+  setDoc,
+  Timestamp,
+  where,
+} from "firebase/firestore";
 import { Profile } from "../types/profile";
 
 export const pickLicenseImage = async (
@@ -22,6 +30,21 @@ export const pickLicenseImage = async (
   }
 };
 
+export const checkUsernameAvailability = async (
+  username: string
+): Promise<boolean> => {
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("username", "==", username));
+  try {
+    const snapshot = await getDocs(q);
+    const isAvailable = snapshot.empty;
+
+    return isAvailable;
+  } catch (e) {
+    return false;
+  }
+};
+
 export const signUp = async ({
   firstName,
   lastName,
@@ -29,7 +52,7 @@ export const signUp = async ({
   birthday,
   email,
   password,
-}: Profile) => {
+}: Omit<Profile, "uid">) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(
       auth,
@@ -46,8 +69,6 @@ export const signUp = async ({
       email,
       createdAt: Timestamp.now(),
     });
-
-    console.log("Signed up:", user.uid);
   } catch (error: any) {
     console.error("Sign up error:", error);
     throw Error(error.message || "Something went wrong. Please try again.");

@@ -1,32 +1,50 @@
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { View, Platform, Pressable, Text, StyleSheet } from "react-native";
 import DatePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function DateField({ setDate }: any) {
-  const [birthday, setBirthday] = useState<Date | null>(null);
+type DateFieldProps = {
+  label?: string;
+  initialValue: Date;
+  setDate: Dispatch<SetStateAction<Date>>;
+};
+
+const formatDate = (date: Date) =>
+  date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+export default function DateField({
+  initialValue,
+  setDate,
+  label = "Date",
+}: DateFieldProps) {
+  const [selectedDate, setSelectedDate] = useState<Date | null>(initialValue);
   const [showPicker, setShowPicker] = useState(false);
 
-  const handleChange = (_event: any, selectedDate?: Date) => {
-    setShowPicker(Platform.OS === "ios"); // keep open on iOS, close on Android
-    if (selectedDate) {
-      setBirthday(selectedDate);
-      setDate?.(selectedDate);
+  const handleChange = (_event: any, newDate?: Date) => {
+    if (newDate) {
+      setSelectedDate(newDate);
+      setDate(newDate);
     }
+    // Keep open on iOS, close on Android
+    setShowPicker(Platform.OS === "ios");
   };
 
   return (
     <View style={styles.container}>
       <Pressable style={styles.input} onPress={() => setShowPicker(true)}>
-        <Text style={birthday ? styles.valueText : styles.placeholderText}>
-          {birthday ? birthday.toISOString().split("T")[0] : "Birthday *"}
+        <Text style={selectedDate ? styles.valueText : styles.placeholderText}>
+          {selectedDate ? formatDate(selectedDate) : label}
         </Text>
         <Ionicons name="chevron-down" size={20} color="#999" />
       </Pressable>
 
       {showPicker && (
         <DatePicker
-          value={birthday || new Date()}
+          value={selectedDate || new Date()}
           mode="date"
           display="default"
           maximumDate={new Date()}
@@ -38,7 +56,11 @@ export default function DateField({ setDate }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { marginBottom: 16, alignItems: "flex-start" },
+  container: {
+    marginBottom: 16,
+    alignItems: "flex-start",
+    width: "100%",
+  },
   input: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -50,14 +72,13 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 8,
     backgroundColor: "#f9f9f9",
-    marginBottom: 16,
   },
   placeholderText: {
     color: "#999",
     fontSize: 16,
   },
   valueText: {
-    color: "#999",
+    color: "#333",
     fontSize: 16,
   },
 });

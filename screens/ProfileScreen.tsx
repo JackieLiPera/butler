@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { auth, db } from "../firebase/config";
 import { doc, getDoc } from "firebase/firestore";
@@ -45,10 +45,14 @@ export default function ProfileScreen() {
     loadUserProfile();
   }, []);
 
-  const handleLogout = async () => {
-    await auth.signOut();
-    navigation.navigate("SignIn");
-  };
+  const handleLogout = useCallback(async () => {
+    try {
+      await auth.signOut();
+      navigation.navigate("SignIn");
+    } catch (e) {
+      throw Error(`There was an issue logging out: ${e}`);
+    }
+  }, [auth]);
 
   const items: {
     label: string;
@@ -58,7 +62,7 @@ export default function ProfileScreen() {
   }[] = [
     { label: "Manage Account", route: "Account" },
     { label: "Request History", route: "History" },
-    { label: "Notification Settings", route: "Settings" },
+    { label: "Settings", route: "Settings" },
     { label: "Privacy Policy", route: "PrivacyPolicy" },
     { label: "Log Out", onPress: handleLogout },
   ];
@@ -74,12 +78,18 @@ export default function ProfileScreen() {
         />
         <Text style={styles.username}>{profile?.username || "Account"}</Text>
       </View>
-      {items.map(({ label, description, route }) => (
+      {items.map(({ label, description, route, onPress }) => (
         <OptionItem
           key={label}
           label={label}
           description={description}
-          onPress={() => navigation.navigate(route!)}
+          onPress={() => {
+            if (onPress) {
+              onPress();
+            } else if (route) {
+              navigation.navigate(route);
+            }
+          }}
         />
       ))}
     </View>

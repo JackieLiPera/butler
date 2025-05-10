@@ -11,8 +11,14 @@ import * as Haptics from "expo-haptics";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { Request } from "../types/request";
-import { acceptRequest, mapStyle } from "../utils";
+import {
+  acceptRequest,
+  checkAccountCompleted,
+  loadUser,
+  mapStyle,
+} from "../utils";
 import { BottomNav } from "../components/BottomNav";
+import { Profile } from "../types/profile";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -31,15 +37,47 @@ export default function HomeScreen({
   const [error, setError] = useState<string | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [ready, setReady] = useState(false);
+  const [banner, setBanner] = useState<string | null>(null);
+  const [user, setUser] = useState<Profile | null>(null);
 
+  // Load User Data
   useEffect(() => {
+    const getUser = async () => {
+      try {
+        const user = await loadUser();
+        setUser(user);
+      } catch (e: unknown) {
+        // @ts-expect-error
+        setBanner(e.message);
+      }
+
+      if (user) {
+        const message = checkAccountCompleted(user);
+
+        setBanner(message);
+      }
+    };
+
+    getUser();
+  }, []);
+
+  // Check if user is fully setup,  Render markers when ready
+  useEffect(() => {
+    if (user) {
+      const message = checkAccountCompleted(user);
+
+      setBanner(message);
+    }
+
     if (location && requests.length > 0) {
       setReady(true);
     }
-  }, [location, requests]);
+  }, [user, location, requests]);
 
+  // Get location and fetch markers
   useEffect(() => {
     const init = async () => {
+      // TODO If location setting is off - render an error message
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         setError("Permission to access location was denied");
@@ -132,14 +170,37 @@ export default function HomeScreen({
               </Marker>
             );
           })}
+
         <View style={styles.buttonContainer}>
+          {banner && (
+            <View style={styles.banner}>
+              <Text style={styles.bannerText}>{banner}</Text>
+              <Pressable
+                style={styles.manageAccountLink}
+                onPress={() => {
+                  navigation.navigate("Account", { user });
+                }}
+              >
+                <Ionicons
+                  name="settings-outline"
+                  size={16}
+                  color="#333"
+                  style={{ marginRight: 6 }}
+                />
+
+                <Text style={styles.linkText}>Manage Account</Text>
+              </Pressable>
+            </View>
+          )}
           <Pressable
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
               navigation.navigate("CreateRequest");
             }}
+            disabled={Boolean(banner)}
             style={({ pressed }) => [
               styles.buttonPressable,
+              Boolean(banner) && styles.buttonDisabled,
               pressed && { transform: [{ scale: pressed ? 0.95 : 1 }] },
             ]}
           >
@@ -193,19 +254,23 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     bottom: 100, // (BottomNav + 20)
-    borderRadius: 12,
+
     overflow: "hidden",
   },
   buttonPressable: {
     backgroundColor: "white",
+    borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",
-    borderRadius: 12,
   },
   buttonText: {
     color: "black",
     fontSize: 18,
     fontWeight: "600",
+  },
+  buttonDisabled: {
+    backgroundColor: "#ccc",
+    opacity: 0.5,
   },
   viewRequestPanel: {
     position: "absolute",
@@ -263,5 +328,33 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#000",
+  },
+  banner: {
+    backgroundColor: "#fff8dc",
+    borderLeftWidth: 4,
+    borderLeftColor: "#ffcc00",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  bannerText: {
+    color: "#333",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  linkText: {
+    fontWeight: "700",
+    color: "#000",
+  },
+  manageAccountLink: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
   },
 });
