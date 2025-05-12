@@ -1,24 +1,16 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import MapView, { Marker, Circle, Region, Callout } from "react-native-maps";
-import * as Location from "expo-location";
 import { ONE_MILE_IN_METERS } from "../constants";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
 import { Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
-import { db } from "../firebase/config";
 import { Request } from "../types/request";
-import {
-  acceptRequest,
-  checkAccountCompleted,
-  loadUser,
-  mapStyle,
-} from "../utils";
+import { acceptRequest, mapStyle } from "../utils";
 import { BottomNav } from "../components/BottomNav";
-import { Profile } from "../types/profile";
+import { useLoadHomeScreen } from "../hooks/useLoadHomeScreen";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -30,77 +22,22 @@ export default function HomeScreen({
 }: {
   navigation: HomeScreenNavigationProp;
 }) {
-  const [location, setLocation] = useState<Location.LocationObject | null>(
-    null
-  );
-  const [requests, setRequests] = useState<any[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
-  const [ready, setReady] = useState(false);
-  const [banner, setBanner] = useState<string | null>(null);
-  const [user, setUser] = useState<Profile | null>(null);
+  const [warningBanner, setWarningBanner] = useState<string>("");
+  const [errorBanner, setErrorBanner] = useState<string>("");
 
-  // Load User Data
+  const { error, warning, ready, data } = useLoadHomeScreen();
+
+  const { location, requests, user } = data || {};
+
   useEffect(() => {
-    const getUser = async () => {
-      try {
-        const user = await loadUser();
-        setUser(user);
-      } catch (e: unknown) {
-        // @ts-expect-error
-        setBanner(e.message);
-      }
-
-      if (user) {
-        const message = checkAccountCompleted(user);
-
-        setBanner(message);
-      }
-    };
-
-    getUser();
-  }, []);
-
-  // Check if user is fully setup,  Render markers when ready
-  useEffect(() => {
-    if (user) {
-      const message = checkAccountCompleted(user);
-
-      setBanner(message);
+    if (error) {
+      setErrorBanner(error);
     }
-
-    if (location && requests.length > 0) {
-      setReady(true);
+    if (warning) {
+      setWarningBanner(error);
     }
-  }, [user, location, requests]);
-
-  // Get location and fetch markers
-  useEffect(() => {
-    const init = async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        setBanner("Permission to access location was denied");
-        return;
-      }
-
-      const loc = await Location.getCurrentPositionAsync({});
-      setLocation(loc);
-    };
-
-    init();
-
-    const requestsRef = collection(db, "requests");
-    const openRequests = query(requestsRef, where("acceptedAt", "==", null));
-
-    const unsubscribe = onSnapshot(openRequests, (snapshot) => {
-      const requestsData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      setRequests(requestsData);
-    });
-    return () => unsubscribe();
-  }, []);
+  }, [error, warning]);
 
   const handleAccept = useCallback(async (request: Request) => {
     await acceptRequest(request);
@@ -166,9 +103,9 @@ export default function HomeScreen({
           })}
 
         <View style={styles.buttonContainer}>
-          {banner && (
-            <View style={styles.banner}>
-              <Text style={styles.bannerText}>{banner}</Text>
+          {warningBanner && (
+            <View style={styles.warningBanner}>
+              <Text style={styles.bannerText}>{warningBanner}</Text>
               <Pressable
                 style={styles.manageAccountLink}
                 onPress={() => {
@@ -186,15 +123,36 @@ export default function HomeScreen({
               </Pressable>
             </View>
           )}
+          {errorBanner && (
+            <View style={styles.errorBanner}>
+              <Text style={styles.bannerText}>{errorBanner}</Text>
+              <Pressable
+                style={styles.manageAccountLink}
+                onPress={() => {
+                  navigation.navigate("Settings", { user });
+                }}
+              >
+                <Ionicons
+                  name="settings-outline"
+                  size={16}
+                  color="#333"
+                  style={{ marginRight: 6 }}
+                />
+
+                <Text style={styles.linkText}>Settings</Text>
+              </Pressable>
+            </View>
+          )}
           <Pressable
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
               navigation.navigate("CreateRequest");
             }}
-            disabled={Boolean(banner)}
+            disabled={Boolean(warningBanner) || Boolean(errorBanner)}
             style={({ pressed }) => [
               styles.buttonPressable,
-              Boolean(banner) && styles.buttonDisabled,
+              (Boolean(warningBanner) || Boolean(errorBanner)) &&
+                styles.buttonDisabled,
               pressed && { transform: [{ scale: pressed ? 0.95 : 1 }] },
             ]}
           >
@@ -323,10 +281,24 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#000",
   },
-  banner: {
+  warningBanner: {
     backgroundColor: "#fff8dc",
     borderLeftWidth: 4,
     borderLeftColor: "#ffcc00",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  errorBanner: {
+    backgroundColor: "#ffe5e5",
+    borderLeftWidth: 4,
+    borderLeftColor: "#e57373",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,

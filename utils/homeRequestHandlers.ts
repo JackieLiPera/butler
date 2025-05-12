@@ -1,9 +1,13 @@
 import {
+  collection,
   doc,
   DocumentData,
   getDoc,
+  onSnapshot,
+  query,
   Timestamp,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import { auth, db } from "../firebase/config";
 import { Request } from "../types/request";
@@ -20,8 +24,6 @@ export const acceptRequest = async (request: Request) => {
     });
   } catch (e) {
     alert(`There was an error accepting the request: "${request.requestText}"`);
-
-    console.log(e);
   }
 };
 
@@ -58,4 +60,20 @@ export const checkAccountCompleted = (user: DocumentData): string | null => {
   }
 
   return null;
+};
+
+export const subscribeToRequests = (
+  callback: (requests: Request[]) => void
+) => {
+  const requestsRef = collection(db, "requests");
+  const openRequests = query(requestsRef, where("acceptedAt", "==", null));
+
+  return onSnapshot(openRequests, (snapshot) => {
+    const requests = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Request[];
+
+    callback(requests);
+  });
 };

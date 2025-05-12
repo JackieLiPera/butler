@@ -29,6 +29,7 @@ export default function DateField({
   const [showPicker, setShowPicker] = useState(false);
 
   const handleChange = (_event: any, newDate?: Date) => {
+    if (disabled) return;
     if (newDate) {
       setSelectedDate(newDate);
       setDate(newDate);
@@ -39,11 +40,15 @@ export default function DateField({
 
   return (
     <View style={styles.container}>
-      <Pressable style={styles.input} onPress={() => setShowPicker(true)}>
+      <Pressable
+        style={styles.input}
+        onPress={() => setShowPicker(true)}
+        disabled={disabled}
+      >
         <Text style={selectedDate ? styles.valueText : styles.placeholderText}>
           {selectedDate ? formatDate(selectedDate) : label}
         </Text>
-        <Ionicons name="chevron-down" size={20} color="#999" />
+        {!disabled && <Ionicons name="chevron-down" size={20} color="#999" />}
       </Pressable>
       {showPicker && (
         <DatePicker
@@ -52,7 +57,6 @@ export default function DateField({
           display={Platform.OS === "ios" ? "spinner" : "default"}
           maximumDate={maxDate}
           onChange={handleChange}
-          disabled={disabled}
         />
       )}
     </View>
