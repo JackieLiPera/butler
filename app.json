@@ -13,14 +13,37 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.jaclyn.devapp",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.684962793084-0stfa1d89ndh1hhb3kicun9b4ssc6b0k"
+            ]
+          }
+        ],
+        "NSCameraUsageDescription": "This app uses your camera to scan ID documents.",
+        "NSLocationWhenInUseUsageDescription": "Location is required to show and create local requests."
+      }
     },
+    "plugins": [
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.684962793084-0stfa1d89ndh1hhb3kicun9b4ssc6b0k",
+          "reservedClientId": "com.googleusercontent.apps.684962793084-0stfa1d89ndh1hhb3kicun9b4ssc6b0k"
+        }
+      ]
+    ],
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.butler"
     },
     "web": {
       "favicon": "./assets/favicon.png"

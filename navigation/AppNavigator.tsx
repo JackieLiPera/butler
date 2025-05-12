@@ -1,5 +1,6 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { configureGoogleSignIn } from "../utils/googleAuth";
 
 import HomeScreen from "../screens/HomeScreen";
 import SignInScreen from "../screens/SignInScreen";
@@ -9,10 +10,15 @@ import { auth } from "../firebase/config";
 import ManageAccountScreen from "../screens/ManageAccountScreen";
 import HistoryScreen from "../screens/HistoryScreen";
 import SettingsScreen from "../screens/SettingsScreen";
+import { useEffect } from "react";
 
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
+  useEffect(() => {
+    configureGoogleSignIn();
+  }, []);
+
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName={auth.currentUser ? "Home" : "SignIn"}>

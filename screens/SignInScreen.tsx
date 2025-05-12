@@ -16,6 +16,9 @@ import { checkUsernameAvailability, errorMap, signIn, signUp } from "../utils";
 import { APP_NAME } from "../constants";
 import DateField from "../components/DateField";
 import { useNavigation } from "@react-navigation/native";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { signInWithCredential, GoogleAuthProvider } from "firebase/auth";
+import { auth } from "../firebase/config";
 
 export default function SignInScreen() {
   const navigation =
@@ -54,6 +57,19 @@ export default function SignInScreen() {
       }
     }
   }, [email, password]);
+
+  const signInWithGoogle = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      const { idToken } = await GoogleSignin.getTokens();
+
+      const googleCredential = GoogleAuthProvider.credential(idToken);
+      await signInWithCredential(auth, googleCredential);
+    } catch (error) {
+      console.error("Google sign-in error:", error);
+    }
+  };
 
   const handleSignUp = useCallback(async () => {
     if (
@@ -308,6 +324,14 @@ export default function SignInScreen() {
                     onPress={handleSignIn}
                   >
                     <Text style={styles.outlinedButtonText}>Sign In</Text>
+                  </Pressable>
+                  <Pressable
+                    style={styles.outlinedButton}
+                    onPress={signInWithGoogle}
+                  >
+                    <Text style={styles.outlinedButtonText}>
+                      Sign in with Google
+                    </Text>
                   </Pressable>
                 </>
               )}
