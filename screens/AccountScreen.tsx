@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { RootStackParamList } from "../types/navigation";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { BottomNav } from "../components/BottomNav";
 
 const OptionItem = ({
   label,
@@ -99,6 +100,7 @@ export default function AccountScreen() {
           }}
         />
       ))}
+      <BottomNav user={user} />
     </View>
   );
 }

@@ -34,7 +34,6 @@ export default function HomeScreen({
     null
   );
   const [requests, setRequests] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [ready, setReady] = useState(false);
   const [banner, setBanner] = useState<string | null>(null);
@@ -108,10 +107,6 @@ export default function HomeScreen({
     alert(`You accepted the request: "${request.requestText}"`);
     setSelectedRequest(null);
   }, []);
-
-  if (error) {
-    return <Text>{error}</Text>;
-  }
 
   if (!location) {
     return <ActivityIndicator size="large" />;

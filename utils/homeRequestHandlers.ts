@@ -50,9 +50,10 @@ export const loadUser = async (): Promise<Profile | null> => {
 };
 
 export const checkAccountCompleted = (user: DocumentData): string | null => {
-  const { phone, identification } = user;
+  const { phone } = user;
+  // TODO identification
 
-  if (!phone || !identification) {
+  if (!phone) {
     return "Finish setting up your account";
   }
 

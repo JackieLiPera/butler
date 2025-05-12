@@ -44,17 +44,16 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingVertical: 24,
     paddingHorizontal: 48,
     backgroundColor: "#fff",
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
     height: 80,
   },
   button: {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    marginTop: 10,
   },
 });

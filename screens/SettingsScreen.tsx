@@ -14,6 +14,9 @@ import { auth } from "../firebase/config";
 import * as Location from "expo-location";
 
 import { APP_NAME } from "../constants";
+import { BottomNav } from "../components/BottomNav";
+import { RouteProp, useRoute } from "@react-navigation/native";
+import { RootStackParamList } from "../types/navigation";
 
 const openAppSettings = () => {
   if (Platform.OS === "ios") {
@@ -23,7 +26,12 @@ const openAppSettings = () => {
   }
 };
 
+type Route = RouteProp<RootStackParamList, "Settings">;
+
 export default function SettingsScreen() {
+  const route = useRoute<Route>();
+  const { user } = route.params;
+
   const [locationEnabled, setLocationEnabled] = useState(false);
 
   useEffect(() => {
@@ -70,6 +78,7 @@ export default function SettingsScreen() {
         </View>
         <Switch value={locationEnabled} onValueChange={handleToggle} />
       </Pressable>
+      <BottomNav user={user} />
     </View>
   );
 }

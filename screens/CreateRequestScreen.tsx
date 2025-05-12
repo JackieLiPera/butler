@@ -12,7 +12,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
 import { ONE_MILE_IN_METERS } from "../constants";
-import { pickImage, createRequest, formatRadius } from "../utils";
+import {
+  pickImage,
+  createRequest,
+  formatRadius,
+  validateRequestText,
+} from "../utils";
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -34,6 +39,7 @@ export default function CreateRequestScreen({
   const [radiusMeters, setRadiusMeters] = useState(ONE_MILE_IN_METERS / 2);
   const [payment, setPayment] = useState("");
   const [imageUri, setImageUri] = useState<string | null>(null);
+  const [error, setError] = useState("");
 
   const handleCreateRequest = useCallback(async () => {
     await createRequest({ requestText, radiusMeters, payment, imageUri });
@@ -70,8 +76,17 @@ export default function CreateRequestScreen({
                 setRequestText(text);
               }
             }}
+            onBlur={() => {
+              const invalidRequest = validateRequestText(requestText);
+              if (invalidRequest) {
+                setError(invalidRequest);
+              } else {
+                setError("");
+              }
+            }}
             maxLength={500}
           />
+          {error && <Text style={styles.error}>{error}</Text>}
           <Text style={styles.charCount}>{requestText.length}/500</Text>
           <Text style={styles.label}>Optional Payment ($)</Text>
           <TextInput
@@ -128,6 +143,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+  },
+  error: {
+    color: "red",
   },
   paymentInput: {
     borderColor: "#ccc",

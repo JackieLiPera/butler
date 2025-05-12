@@ -10,11 +10,13 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { Pressable, Alert } from "react-native";
+import { ScrollView } from "react-native";
 
 import { RootStackParamList } from "../types/navigation";
 import DateField from "../components/DateField";
 import { updateProfile } from "../utils/accountRequestHandlers";
 import { RouteProp, useRoute } from "@react-navigation/native";
+import { BottomNav } from "../components/BottomNav";
 
 type Route = RouteProp<RootStackParamList, "ManageAccount">;
 
@@ -56,59 +58,63 @@ export default function ManageAccountScreen() {
       style={{ flex: 1 }}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.container}>
-          <Text style={styles.header}>Account Info</Text>
-          <Text style={styles.label}>First Name</Text>
-          <TextInput
-            style={styles.input}
-            value={firstName}
-            onChangeText={setFirstName}
-          />
-          <Text style={styles.label}>Last Name</Text>
-          <TextInput
-            style={styles.input}
-            value={lastName}
-            onChangeText={setLastName}
-          />
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={[styles.input, styles.disabledInput]}
-            value={user.email}
-            editable={false}
-          />
-          <Text style={styles.label}>Username</Text>
-          <TextInput
-            style={[styles.input, styles.disabledInput]}
-            value={user.username}
-            editable={false}
-          />
-          <Text style={styles.label}>Birthday</Text>
-          <DateField
-            setDate={setBirthday}
-            initialValue={birthday}
-            label="Birthday *"
-            disabled
-          />
+        <ScrollView contentContainerStyle={styles.container}>
+          <View style={styles.container}>
+            <Text style={styles.header}>Account Info</Text>
+            <Text style={styles.label}>First Name</Text>
+            <TextInput
+              style={styles.input}
+              value={firstName}
+              onChangeText={setFirstName}
+            />
+            <Text style={styles.label}>Last Name</Text>
+            <TextInput
+              style={styles.input}
+              value={lastName}
+              onChangeText={setLastName}
+            />
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={[styles.input, styles.disabledInput]}
+              value={user.email}
+              editable={false}
+            />
+            <Text style={styles.label}>Username</Text>
+            <TextInput
+              style={[styles.input, styles.disabledInput]}
+              value={user.username}
+              editable={false}
+            />
+            <Text style={styles.label}>Phone</Text>
+            <TextInput
+              style={styles.input}
+              value={phone}
+              onChangeText={setPhone}
+              keyboardType="phone-pad"
+              placeholder="(555) 555-5555"
+              maxLength={14}
+            />
+            {phoneBanner && (
+              <View style={styles.banner}>
+                <Text style={styles.bannerText}>{phoneBanner}</Text>
+              </View>
+            )}
+            <Text style={styles.label}>Birthday</Text>
+            <DateField
+              setDate={setBirthday}
+              initialValue={birthday}
+              label="Birthday *"
+              disabled
+            />
+            {error && <Text style={{ color: "red" }}>{error}</Text>}
 
-          <Text style={styles.label}>Phone</Text>
-          <TextInput
-            style={styles.input}
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
-            placeholder="(555) 555-5555"
-            maxLength={14}
-          />
-          {phoneBanner && (
-            <View style={styles.banner}>
-              <Text style={styles.bannerText}>{phoneBanner}</Text>
-            </View>
-          )}
+            <Pressable style={styles.button} onPress={handleUpdate}>
+              <Text style={styles.buttonText}>Update Profile</Text>
+            </Pressable>
 
-          <Pressable style={styles.button} onPress={handleUpdate}>
-            <Text style={styles.buttonText}>Update Profile</Text>
-          </Pressable>
-        </View>
+            <BottomNav user={user} />
+          </View>
+        </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
