@@ -87,6 +87,7 @@ export default function ManageAccountScreen() {
             setDate={setBirthday}
             initialValue={birthday}
             label="Birthday *"
+            disabled
           />
 
           <Text style={styles.label}>Phone</Text>

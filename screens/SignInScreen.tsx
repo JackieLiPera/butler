@@ -12,10 +12,10 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { RootStackParamList } from "../types/navigation";
-import { checkUsernameAvailability, errorMap, signIn, signUp } from "../utils";
+import { errorMap, signIn } from "../utils";
 import { APP_NAME } from "../constants";
-import DateField from "../components/DateField";
 import { useNavigation } from "@react-navigation/native";
+import SignUpScreen from "./SignUpScreen";
 
 export default function SignInScreen() {
   const navigation =
@@ -24,12 +24,6 @@ export default function SignInScreen() {
   const [error, setError] = useState<string>("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [username, setUserName] = useState("");
-  const [birthday, setBirthday] = useState<Date>(new Date());
-
   const [isSignUp, setIsSignUp] = useState<boolean | null>(null);
 
   const handleSignIn = useCallback(async () => {
@@ -54,59 +48,6 @@ export default function SignInScreen() {
       }
     }
   }, [email, password]);
-
-  const handleSignUp = useCallback(async () => {
-    if (
-      !firstName ||
-      !lastName ||
-      !username ||
-      !birthday ||
-      !email ||
-      !password
-    ) {
-      setError("Please fill out all required fields.");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
-      return;
-    }
-
-    if (error) return;
-
-    try {
-      await signUp({
-        firstName,
-        lastName,
-        username,
-        birthday,
-        email,
-        password,
-      });
-      navigation.navigate("Home");
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        // @ts-expect-error
-        setError(errorMap[e.message] || "Internal error.");
-      } else {
-        console.error("Unknown error:", e);
-      }
-    }
-  }, [firstName, lastName, username, email, birthday, password]);
-
-  const handleCheckUsernameAvailability = useCallback(
-    async (value: string) => {
-      const isAvailable = await checkUsernameAvailability(value);
-
-      if (isAvailable) {
-        setError("");
-      } else {
-        setError("Username is not available. Try again.");
-      }
-    },
-    [setUserName]
-  );
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -136,138 +77,12 @@ export default function SignInScreen() {
             </>
           ) : (
             <>
-              <Text style={styles.header}>
-                {isSignUp ? "Sign Up" : "Sign In"}
-              </Text>
               {isSignUp ? (
-                <>
-                  <TextInput
-                    placeholder="First Name *"
-                    style={styles.input}
-                    value={firstName}
-                    onChangeText={setFirstName}
-                    onBlur={() => {
-                      if (!firstName.trim()) {
-                        setError("First name is required.");
-                      }
-                    }}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Last Name *"
-                    value={lastName}
-                    onChangeText={setLastName}
-                    onBlur={() => {
-                      if (!lastName.trim()) {
-                        setError("Last name is required.");
-                      }
-                    }}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Username *"
-                    value={username}
-                    onChangeText={(val) => {
-                      setUserName(val);
-                    }}
-                    onBlur={() => {
-                      if (!username.trim()) {
-                        setError("Username is required.");
-                      }
-
-                      handleCheckUsernameAvailability(username);
-                    }}
-                  />
-
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Email *"
-                    value={email}
-                    onChangeText={(text) => {
-                      setEmail(text);
-                      if (error) setError("");
-                    }}
-                    onBlur={() => {
-                      const trimmed = email.trim();
-                      const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-                        trimmed
-                      );
-
-                      if (!trimmed) {
-                        setError("Email is required.");
-                      } else if (!isValidEmail) {
-                        setError("Please enter a valid email address.");
-                      }
-                    }}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Password *"
-                    value={password}
-                    secureTextEntry
-                    onChangeText={setPassword}
-                    onBlur={() => {
-                      if (!password) {
-                        setError("Password is required.");
-                      }
-                    }}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter Password Again *"
-                    value={confirmPassword}
-                    secureTextEntry
-                    onChangeText={setConfirmPassword}
-                    onBlur={() => {
-                      if (password != confirmPassword) {
-                        setError("Passwords must match.");
-                      }
-                    }}
-                  />
-
-                  <DateField
-                    setDate={setBirthday}
-                    initialValue={birthday}
-                    label="Birthday *"
-                  />
-
-                  {/* Finish Setting up your profile */}
-                  {/* <Pressable
-                    onPress={() => pickLicenseImage(setLicenseUri)}
-                    style={styles.uploadBox}
-                  >
-                    {licenseUri ? (
-                      <Image
-                        source={{ uri: licenseUri }}
-                        style={styles.uploadedImage}
-                      />
-                    ) : (
-                      <View style={styles.uploadPlaceholder}>
-                        <Ionicons name="add" size={32} color="#999" />
-                        <Text style={styles.uploadText}>
-                          Upload a picture of legal identification
-                        </Text>
-                      </View>
-                    )}
-                  </Pressable> */}
-
-                  {error ? <Text style={styles.error}>{error}</Text> : null}
-
-                  <Pressable
-                    style={() => [
-                      styles.outlinedButton,
-                      Boolean(error) && styles.buttonDisabled,
-                    ]}
-                    onPress={handleSignUp}
-                    disabled={Boolean(error)}
-                  >
-                    <Text style={styles.outlinedButtonText}>
-                      Create Account
-                    </Text>
-                  </Pressable>
-                </>
+                <SignUpScreen />
               ) : (
                 <>
+                  <Text style={styles.header}>Sign in to {APP_NAME}</Text>
+
                   <TextInput
                     style={styles.input}
                     placeholder="Email *"
@@ -337,33 +152,13 @@ const styles = StyleSheet.create({
     padding: 24,
     backgroundColor: "#fff",
   },
-  buttonDisabled: {
-    backgroundColor: "#ccc",
-    opacity: 0.3,
+  header: {
+    fontSize: 24,
+    fontWeight: "600",
+    marginBottom: 24,
   },
   error: {
     color: "red",
-  },
-  uploadBox: {
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    minHeight: 180,
-    maxHeight: 250,
-    width: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
-  },
-  uploadedImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-  },
-  uploadText: {
-    color: "#666",
-    fontSize: 14,
   },
   logo: {
     fontSize: 36,
@@ -384,14 +179,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
   },
-  header: {
-    fontSize: 28,
-    fontWeight: "600",
-    marginBottom: 16,
-  },
   back: {
     color: "#000",
-    marginTop: 16,
+    marginVertical: 16,
     fontSize: 16,
   },
   input: {
@@ -404,9 +194,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: "#f9f9f9",
     marginBottom: 12,
-  },
-  uploadPlaceholder: {
-    justifyContent: "center",
-    alignItems: "center",
   },
 });

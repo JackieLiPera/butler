@@ -4,8 +4,10 @@ import DatePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 
 type DateFieldProps = {
+  disabled?: boolean;
+  initialValue: Date | null;
   label?: string;
-  initialValue: Date;
+  maxDate?: Date;
   setDate: Dispatch<SetStateAction<Date>>;
 };
 
@@ -20,6 +22,8 @@ export default function DateField({
   initialValue,
   setDate,
   label = "Date",
+  maxDate = new Date(),
+  disabled = false,
 }: DateFieldProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(initialValue);
   const [showPicker, setShowPicker] = useState(false);
@@ -41,14 +45,14 @@ export default function DateField({
         </Text>
         <Ionicons name="chevron-down" size={20} color="#999" />
       </Pressable>
-
       {showPicker && (
         <DatePicker
-          value={selectedDate || new Date()}
+          value={selectedDate || maxDate}
           mode="date"
-          display="default"
-          maximumDate={new Date()}
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          maximumDate={maxDate}
           onChange={handleChange}
+          disabled={disabled}
         />
       )}
     </View>
@@ -57,7 +61,6 @@ export default function DateField({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
     alignItems: "flex-start",
     width: "100%",
   },
