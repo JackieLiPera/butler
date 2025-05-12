@@ -4,9 +4,9 @@ export type RootStackParamList = {
   CreateRequest: undefined;
   History: undefined;
   Home: undefined;
-  Account: { user: Profile | null };
+  ManageAccount: { user: Profile | null };
   PrivacyPolicy: undefined;
-  Profile: undefined;
-  Settings: undefined;
+  Account: { user: Profile | null };
+  Settings: { user: Profile | null };
   SignIn: undefined;
 };

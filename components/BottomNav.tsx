@@ -2,8 +2,9 @@ import React from "react";
 import { View, Pressable, StyleSheet, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { Profile } from "../types/profile";
 
-export const BottomNav = () => {
+export const BottomNav = ({ user }: { user: Profile | null }) => {
   const navigation = useNavigation<any>();
   const route = useRoute();
 
@@ -23,13 +24,13 @@ export const BottomNav = () => {
         <Text>Home</Text>
       </Pressable>
       <Pressable
-        onPress={() => navigation.navigate("Profile")}
+        onPress={() => navigation.navigate("Account", { user })}
         style={styles.button}
       >
         <Ionicons
-          name={isActive("Profile") ? "person" : "person-outline"}
+          name={isActive("Account") ? "person" : "person-outline"}
           size={28}
-          color={isActive("Profile") ? "#000" : "#999"}
+          color={isActive("Account") ? "#000" : "#999"}
         />
         <Text>Account</Text>
       </Pressable>

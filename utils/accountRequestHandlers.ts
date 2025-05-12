@@ -1,6 +1,5 @@
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
-import { Profile } from "../types/profile";
 import { deserializeUser } from "./user";
 
 export const updateProfile = async (

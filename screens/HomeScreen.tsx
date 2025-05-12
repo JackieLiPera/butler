@@ -77,10 +77,9 @@ export default function HomeScreen({
   // Get location and fetch markers
   useEffect(() => {
     const init = async () => {
-      // TODO If location setting is off - render an error message
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        setError("Permission to access location was denied");
+        setBanner("Permission to access location was denied");
         return;
       }
 
@@ -178,7 +177,7 @@ export default function HomeScreen({
               <Pressable
                 style={styles.manageAccountLink}
                 onPress={() => {
-                  navigation.navigate("Account", { user });
+                  navigation.navigate("ManageAccount", { user });
                 }}
               >
                 <Ionicons
@@ -237,7 +236,7 @@ export default function HomeScreen({
         </View>
       )}
 
-      <BottomNav />
+      <BottomNav user={user} />
     </View>
   );
 }
