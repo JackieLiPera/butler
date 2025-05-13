@@ -21,6 +21,7 @@ export const acceptRequest = async (request: Request) => {
     await updateDoc(doc(db, "requests", request.id), {
       acceptedBy: currentUser?.uid,
       acceptedAt: Timestamp.now(),
+      duration: request.duration,
     });
   } catch (e) {
     alert(`There was an error accepting the request: "${request.requestText}"`);

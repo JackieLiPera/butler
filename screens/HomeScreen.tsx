@@ -11,6 +11,9 @@ import { Request } from "../types/request";
 import { acceptRequest, mapStyle } from "../utils";
 import { BottomNav } from "../components/BottomNav";
 import { useLoadHomeScreen } from "../hooks/useLoadHomeScreen";
+import { Picker } from "@react-native-picker/picker";
+import { Banner } from "../components/Banner";
+import Toast from "react-native-toast-message";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -25,6 +28,8 @@ export default function HomeScreen({
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [warningBanner, setWarningBanner] = useState<string>("");
   const [errorBanner, setErrorBanner] = useState<string>("");
+  const [pendingRequest, setPendingRequest] = useState<Request | null>(null);
+  const [durationMinutes, setDurationMinutes] = useState<number>(15);
 
   const { error, warning, ready, data } = useLoadHomeScreen();
 
@@ -40,9 +45,18 @@ export default function HomeScreen({
   }, [error, warning]);
 
   const handleAccept = useCallback(async (request: Request) => {
-    await acceptRequest(request);
-    alert(`You accepted the request: "${request.requestText}"`);
-    setSelectedRequest(null);
+    try {
+      await acceptRequest({ ...request, duration: durationMinutes });
+      Toast.show({
+        type: "success",
+        text1: "Request accepted",
+        text2: "Please complete the task in the expected duration.",
+      });
+      setSelectedRequest(null);
+      setPendingRequest(null);
+    } catch (e) {
+      console.log(e);
+    }
   }, []);
 
   if (!location) {
@@ -104,44 +118,40 @@ export default function HomeScreen({
 
         <View style={styles.buttonContainer}>
           {warningBanner && (
-            <View style={styles.warningBanner}>
-              <Text style={styles.bannerText}>{warningBanner}</Text>
-              <Pressable
-                style={styles.manageAccountLink}
-                onPress={() => {
-                  navigation.navigate("ManageAccount", { user });
-                }}
-              >
-                <Ionicons
-                  name="settings-outline"
-                  size={16}
-                  color="#333"
-                  style={{ marginRight: 6 }}
-                />
+            <Banner
+              text={warningBanner}
+              type="warning"
+              callback={() => {
+                navigation.navigate("ManageAccount", { user });
+              }}
+            >
+              <Ionicons
+                name="settings-outline"
+                size={16}
+                color="#333"
+                style={{ marginRight: 6 }}
+              />
 
-                <Text style={styles.linkText}>Manage Account</Text>
-              </Pressable>
-            </View>
+              <Text style={styles.linkText}>Manage Account</Text>
+            </Banner>
           )}
           {errorBanner && (
-            <View style={styles.errorBanner}>
-              <Text style={styles.bannerText}>{errorBanner}</Text>
-              <Pressable
-                style={styles.manageAccountLink}
-                onPress={() => {
-                  navigation.navigate("Settings", { user });
-                }}
-              >
-                <Ionicons
-                  name="settings-outline"
-                  size={16}
-                  color="#333"
-                  style={{ marginRight: 6 }}
-                />
+            <Banner
+              text={errorBanner}
+              type="error"
+              callback={() => {
+                navigation.navigate("Settings", { user });
+              }}
+            >
+              <Ionicons
+                name="settings-outline"
+                size={16}
+                color="#333"
+                style={{ marginRight: 6 }}
+              />
 
-                <Text style={styles.linkText}>Settings</Text>
-              </Pressable>
-            </View>
+              <Text style={styles.linkText}>Settings</Text>
+            </Banner>
           )}
           <Pressable
             onPress={() => {
@@ -164,7 +174,10 @@ export default function HomeScreen({
       {selectedRequest && (
         <View style={styles.viewRequestPanel}>
           <Pressable
-            onPress={() => setSelectedRequest(null)}
+            onPress={() => {
+              setSelectedRequest(null);
+              setPendingRequest(null);
+            }}
             style={styles.closeButton}
           >
             <Ionicons name="close" size={24} color="#333" />
@@ -179,17 +192,51 @@ export default function HomeScreen({
             Distance:{" "}
             {(selectedRequest.radius.meters / ONE_MILE_IN_METERS).toFixed(1)} mi
           </Text>
-
+          {pendingRequest && (
+            <>
+              <Text style={styles.calloutText}>
+                Provide an estimate to complete the request
+              </Text>
+              <Picker
+                selectedValue={durationMinutes}
+                onValueChange={(value) => setDurationMinutes(value)}
+              >
+                {[...Array(24 * 4)].map((_, i) => {
+                  const minutes = (i + 1) * 5;
+                  return (
+                    <Picker.Item
+                      key={minutes}
+                      label={`${
+                        minutes >= 60 ? `${minutes / 60} hr` : `${minutes} min`
+                      }`}
+                      value={minutes}
+                    />
+                  );
+                })}
+              </Picker>
+            </>
+          )}
           <Pressable
             style={styles.acceptButton}
-            onPress={() => handleAccept(selectedRequest)}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              if (pendingRequest) {
+                handleAccept(selectedRequest);
+              } else {
+                setPendingRequest(selectedRequest);
+              }
+            }}
           >
-            <Text style={styles.acceptButtonText}>Accept Request</Text>
+            <Text style={styles.acceptButtonText}>
+              {pendingRequest ? "Submit" : "Accept Request"}
+            </Text>
           </Pressable>
         </View>
       )}
 
       <BottomNav user={user} />
+
+      <Toast />
     </View>
   );
 }
@@ -206,7 +253,6 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     bottom: 100, // (BottomNav + 20)
-
     overflow: "hidden",
   },
   buttonPressable: {
@@ -281,46 +327,8 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#000",
   },
-  warningBanner: {
-    backgroundColor: "#fff8dc",
-    borderLeftWidth: 4,
-    borderLeftColor: "#ffcc00",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  errorBanner: {
-    backgroundColor: "#ffe5e5",
-    borderLeftWidth: 4,
-    borderLeftColor: "#e57373",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  bannerText: {
-    color: "#333",
-    fontSize: 14,
-    fontWeight: "500",
-  },
   linkText: {
     fontWeight: "700",
     color: "#000",
-  },
-  manageAccountLink: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 8,
   },
 });
