@@ -15,16 +15,16 @@ import { Profile, UserData } from "../types/profile";
 import { serializeUser } from "./user";
 
 export const acceptRequest = async (request: Request) => {
-  const currentUser = auth.currentUser;
-
   try {
     await updateDoc(doc(db, "requests", request.id), {
-      acceptedBy: currentUser?.uid,
+      user: request.user,
       acceptedAt: Timestamp.now(),
       duration: request.duration,
     });
   } catch (e) {
-    alert(`There was an error accepting the request: "${request.requestText}"`);
+    throw Error(
+      `There was an error accepting the request. Request Id: ${request.id}`
+    );
   }
 };
 

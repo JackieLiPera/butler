@@ -1,8 +1,9 @@
 import { Timestamp } from "firebase/firestore";
+import { Profile } from "./profile";
 
 export interface Request {
   acceptedAt?: Date | null;
-  acceptedBy?: string;
+  user: Profile;
   duration?: number;
   requestText: string;
   createdAt: Timestamp;

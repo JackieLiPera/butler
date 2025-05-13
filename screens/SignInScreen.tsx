@@ -2,7 +2,6 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
 import {
   View,
-  TextInput,
   Text,
   Pressable,
   StyleSheet,
@@ -16,6 +15,12 @@ import { errorMap, signIn } from "../utils";
 import { APP_NAME } from "../constants";
 import { useNavigation } from "@react-navigation/native";
 import SignUpScreen from "./SignUpScreen";
+import {
+  HeaderText,
+  OutlinedButton,
+  InputText,
+  ErrorText,
+} from "../components";
 
 export default function SignInScreen() {
   const navigation =
@@ -60,20 +65,14 @@ export default function SignInScreen() {
           {isSignUp === null ? (
             <>
               <Text style={styles.logo}>{APP_NAME}</Text>
-
-              <Pressable
-                style={styles.outlinedButton}
+              <OutlinedButton
+                text={"Sign In"}
                 onPress={() => setIsSignUp(false)}
-              >
-                <Text style={styles.outlinedButtonText}>Sign In</Text>
-              </Pressable>
-
-              <Pressable
-                style={styles.outlinedButton}
+              />
+              <OutlinedButton
+                text={"Sign Up"}
                 onPress={() => setIsSignUp(true)}
-              >
-                <Text style={styles.outlinedButtonText}>Sign Up</Text>
-              </Pressable>
+              />
             </>
           ) : (
             <>
@@ -81,13 +80,11 @@ export default function SignInScreen() {
                 <SignUpScreen />
               ) : (
                 <>
-                  <Text style={styles.header}>Sign in to {APP_NAME}</Text>
-
-                  <TextInput
-                    style={styles.input}
+                  <HeaderText>Sign in to {APP_NAME}</HeaderText>
+                  <InputText
                     placeholder="Email *"
                     value={email}
-                    onChangeText={(text) => {
+                    onChange={(text) => {
                       setEmail(text);
                       if (error) setError("");
                     }}
@@ -104,12 +101,11 @@ export default function SignInScreen() {
                       }
                     }}
                   />
-                  <TextInput
-                    style={styles.input}
+                  <InputText
                     placeholder="Password *"
                     value={password}
                     secureTextEntry
-                    onChangeText={setPassword}
+                    onChange={setPassword}
                     onBlur={() => {
                       if (!password.trim()) {
                         setError("Password is required.");
@@ -117,13 +113,9 @@ export default function SignInScreen() {
                     }}
                   />
 
-                  {error ? <Text style={styles.error}>{error}</Text> : null}
-                  <Pressable
-                    style={styles.outlinedButton}
-                    onPress={handleSignIn}
-                  >
-                    <Text style={styles.outlinedButtonText}>Sign In</Text>
-                  </Pressable>
+                  {error ? <ErrorText>{error}</ErrorText> : null}
+
+                  <OutlinedButton onPress={handleSignIn} text="Sign In" />
                 </>
               )}
               <Pressable
@@ -152,47 +144,14 @@ const styles = StyleSheet.create({
     padding: 24,
     backgroundColor: "#fff",
   },
-  header: {
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 24,
-  },
-  error: {
-    color: "red",
-  },
   logo: {
     fontSize: 36,
     fontWeight: "700",
     marginBottom: 48,
   },
-  outlinedButton: {
-    borderWidth: 1,
-    borderColor: "#000",
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    marginVertical: 8,
-    width: "100%",
-    alignItems: "center",
-  },
-  outlinedButtonText: {
-    fontSize: 16,
-    fontWeight: "500",
-  },
   back: {
     color: "#000",
     marginVertical: 16,
     fontSize: 16,
-  },
-  input: {
-    width: "100%",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    fontSize: 16,
-    backgroundColor: "#f9f9f9",
-    marginBottom: 12,
   },
 });

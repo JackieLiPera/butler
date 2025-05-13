@@ -46,16 +46,24 @@ export default function HomeScreen({
 
   const handleAccept = useCallback(async (request: Request) => {
     try {
-      await acceptRequest({ ...request, duration: durationMinutes });
-      Toast.show({
-        type: "success",
-        text1: "Request accepted",
-        text2: "Please complete the task in the expected duration.",
-      });
-      setSelectedRequest(null);
-      setPendingRequest(null);
+      if (user) {
+        await acceptRequest({
+          ...request,
+          user,
+          duration: durationMinutes,
+        });
+        Toast.show({
+          type: "success",
+          text1: "Request accepted",
+          text2: "Please complete the task in the expected duration.",
+        });
+        setSelectedRequest(null);
+        setPendingRequest(null);
+      }
     } catch (e) {
-      console.log(e);
+      if (e instanceof Error) {
+        setErrorBanner(e.message);
+      }
     }
   }, []);
 
@@ -195,7 +203,7 @@ export default function HomeScreen({
           {pendingRequest && (
             <>
               <Text style={styles.calloutText}>
-                Provide an estimate to complete the request
+                Provide an estimate to complete the request.
               </Text>
               <Picker
                 selectedValue={durationMinutes}

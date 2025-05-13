@@ -3,11 +3,17 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
 import { RootStackParamList } from "../types/navigation";
 import { checkUsernameAvailability, signUp } from "../utils";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import DateField from "../components/DateField";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { APP_NAME } from "../constants";
 import { Ionicons } from "@expo/vector-icons";
 import { validatePassword } from "../utils";
+import {
+  HeaderText,
+  HelperText,
+  DateField,
+  InputText,
+  ErrorText,
+} from "../components";
 
 const fieldsMapper: Record<number, Set<string>> = {
   1: new Set(["email", "username"]),
@@ -55,8 +61,20 @@ export default function SignUpScreen() {
       return;
     }
 
+    if (step < 1 || step > 3) {
+      console.error("Step out of range");
+    }
+
     setStep(step + 1);
   }, [email, username, firstName, lastName, birthday]);
+
+  const handleBack = () => {
+    if (step < 1 || step > 3) {
+      console.error("Step out of range");
+    }
+    setError("");
+    setStep(step - 1);
+  };
 
   const handleCheckUsernameAvailability = useCallback(
     async (value: string) => {
@@ -130,16 +148,15 @@ export default function SignUpScreen() {
   }, [firstName, lastName, username, email, birthday, password]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Create your {APP_NAME} account</Text>
+    <>
+      <HeaderText>Create your {APP_NAME} account</HeaderText>
 
       {step === 1 && (
         <>
-          <TextInput
-            style={styles.input}
-            placeholder="Email *"
+          <InputText
+            placeholder="Enter your email"
             value={email}
-            onChangeText={(text) => {
+            onChange={(text) => {
               setEmail(text);
               if (error) setError("");
             }}
@@ -155,15 +172,19 @@ export default function SignUpScreen() {
               }
             }}
           />
-          <View>
-            <TextInput
-              style={styles.input}
-              placeholder="Username *"
+
+          <>
+            <InputText
+              placeholder="Create a username for your account"
               value={username}
-              onChangeText={setUsername}
+              onChange={setUsername}
               onBlur={() => {
                 if (!username.trim()) {
                   setError("Username is required.");
+                  return;
+                }
+                if (username.length < 4) {
+                  setError("Username must be more than 4 characters.");
                   return;
                 }
 
@@ -176,57 +197,60 @@ export default function SignUpScreen() {
                 <Text style={{ marginLeft: 4 }}>{username} is available!</Text>
               </View>
             )}
-          </View>
+          </>
         </>
       )}
 
       {step === 2 && (
         <>
-          <TextInput
-            style={styles.input}
-            placeholder="First Name *"
+          <InputText
+            placeholder="Enter your first name *"
             value={firstName}
-            onChangeText={setFirstName}
+            onChange={setFirstName}
             onBlur={() => {
               if (!firstName.trim()) {
                 setError("First name is required.");
+              } else {
+                setError("");
               }
             }}
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Last Name *"
+          <InputText
+            placeholder="Enter your last name *"
             value={lastName}
-            onChangeText={setLastName}
+            onChange={setLastName}
             onBlur={() => {
               if (!lastName.trim()) {
                 setError("Last name is required.");
+              } else {
+                setError("");
               }
             }}
           />
-          <DateField
-            label="Birthday *"
-            // @ts-expect-error we dont allow setting null for birthday except for initial value
-            setDate={setBirthday}
-            initialValue={birthday}
-            maxDate={
-              new Date(new Date().setFullYear(new Date().getFullYear() - 18))
-            }
-          />
-          <Text style={styles.helperText}>
-            You must be 18 years or older to use {APP_NAME}
-          </Text>
+          <View style={{ marginBottom: 16 }}>
+            <DateField
+              label="Enter your birthday *"
+              // @ts-expect-error we dont allow setting null for birthday except for initial value
+              setDate={setBirthday}
+              initialValue={birthday}
+              maxDate={
+                new Date(new Date().setFullYear(new Date().getFullYear() - 18))
+              }
+            />
+            <HelperText>
+              You must be 18 years or older to use {APP_NAME}
+            </HelperText>
+          </View>
         </>
       )}
 
       {step === 3 && (
         <>
-          <TextInput
-            style={styles.input}
+          <InputText
             placeholder="Password *"
             value={password}
             secureTextEntry
-            onChangeText={setPassword}
+            onChange={setPassword}
             onBlur={() => {
               if (!password) {
                 setError("Password is required.");
@@ -237,12 +261,11 @@ export default function SignUpScreen() {
               }
             }}
           />
-          <TextInput
-            style={styles.input}
+          <InputText
             placeholder="Confirm Password *"
             value={confirmPassword}
             secureTextEntry
-            onChangeText={setConfirmPassword}
+            onChange={setConfirmPassword}
             onBlur={() => {
               if (!confirmPassword) {
                 setError("Please confirm your password.");
@@ -252,14 +275,19 @@ export default function SignUpScreen() {
               }
             }}
           />
+
+          <HelperText>
+            Passwords must be 8 characters or more. Must have at least one
+            capital letter, one special character and one number.
+          </HelperText>
         </>
       )}
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <ErrorText>{error}</ErrorText> : null}
 
       <View style={styles.nav}>
         {step > 1 && (
-          <Pressable onPress={() => setStep(step - 1)}>
+          <Pressable onPress={handleBack}>
             <Text style={styles.navButton}>← Back</Text>
           </Pressable>
         )}
@@ -277,32 +305,11 @@ export default function SignUpScreen() {
           </Pressable>
         )}
       </View>
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    backgroundColor: "#fff",
-    flex: 1,
-    justifyContent: "center",
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 24,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    fontSize: 16,
-    backgroundColor: "#f9f9f9",
-  },
   nav: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -313,10 +320,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "black",
   },
-  error: {
-    color: "red",
-    marginTop: 24,
-  },
   usernameAvailable: {
     marginTop: 4,
     marginLeft: 4,
@@ -324,26 +327,6 @@ const styles = StyleSheet.create({
     color: "#666",
     flexDirection: "row",
     alignItems: "center",
-  },
-  helperText: {
-    marginTop: 4,
-    marginLeft: 4,
-    fontSize: 12,
-    color: "#666",
-  },
-  outlinedButton: {
-    borderWidth: 1,
-    borderColor: "#000",
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    marginVertical: 8,
-    width: "100%",
-    alignItems: "center",
-  },
-  outlinedButtonText: {
-    fontSize: 16,
-    fontWeight: "500",
   },
   buttonDisabled: {
     color: "#ccc",

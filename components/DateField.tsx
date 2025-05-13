@@ -18,7 +18,7 @@ const formatDate = (date: Date) =>
     day: "numeric",
   });
 
-export default function DateField({
+export function DateField({
   initialValue,
   setDate,
   label = "Date",
