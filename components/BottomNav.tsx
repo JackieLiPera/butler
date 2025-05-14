@@ -2,7 +2,7 @@ import React from "react";
 import { View, Pressable, StyleSheet, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { Profile } from "../types/profile";
+import { Profile } from "../types";
 
 export const BottomNav = ({ user }: { user: Profile | null }) => {
   const navigation = useNavigation<any>();

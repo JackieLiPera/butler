@@ -18,6 +18,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "600",
     marginBottom: 24,
+    alignSelf: "center",
   },
   helper: {
     marginTop: 4,

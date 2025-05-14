@@ -4,9 +4,9 @@ import { auth, db } from "../firebase/config";
 import { doc, getDoc } from "firebase/firestore";
 import { Ionicons } from "@expo/vector-icons";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import { RootStackParamList } from "../types/navigation";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { BottomNav } from "../components/BottomNav";
+import { BottomNav } from "../components";
+import type { RootStackParamList } from "../types";
 
 const OptionItem = ({
   label,

@@ -14,9 +14,9 @@ import { auth } from "../firebase/config";
 import * as Location from "expo-location";
 
 import { APP_NAME } from "../constants";
-import { BottomNav } from "../components/BottomNav";
+import { BottomNav } from "../components";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { RootStackParamList } from "../types/navigation";
+import type { RootStackParamList } from "../types";
 
 const openAppSettings = () => {
   if (Platform.OS === "ios") {

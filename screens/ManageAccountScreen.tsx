@@ -11,12 +11,11 @@ import {
 } from "react-native";
 import { Pressable, Alert } from "react-native";
 import { ScrollView } from "react-native";
-
-import { RootStackParamList } from "../types/navigation";
-import DateField from "../components/DateField";
-import { updateProfile } from "../utils/accountRequestHandlers";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { BottomNav } from "../components/BottomNav";
+
+import { DateField, BottomNav } from "../components";
+import { updateProfile } from "../utils/accountRequestHandlers";
+import type { RootStackParamList } from "../types";
 
 type Route = RouteProp<RootStackParamList, "ManageAccount">;
 

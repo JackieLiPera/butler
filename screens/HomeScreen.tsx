@@ -3,17 +3,15 @@ import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import MapView, { Marker, Circle, Region, Callout } from "react-native-maps";
 import { ONE_MILE_IN_METERS } from "../constants";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../types/navigation";
 import { Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { Request } from "../types/request";
 import { acceptRequest, mapStyle } from "../utils";
-import { BottomNav } from "../components/BottomNav";
 import { useLoadHomeScreen } from "../hooks/useLoadHomeScreen";
 import { Picker } from "@react-native-picker/picker";
-import { Banner } from "../components/Banner";
+import { Banner, BottomNav } from "../components";
 import Toast from "react-native-toast-message";
+import type { RootStackParamList, Request } from "../types";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,

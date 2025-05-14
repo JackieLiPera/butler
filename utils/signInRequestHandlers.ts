@@ -14,7 +14,7 @@ import {
   Timestamp,
   where,
 } from "firebase/firestore";
-import { Profile } from "../types/profile";
+import type { Profile } from "../types";
 
 export const pickLicenseImage = async (
   setLicenseUri: Dispatch<SetStateAction<string | null>>
@@ -69,9 +69,12 @@ export const signUp = async ({
       email,
       createdAt: Timestamp.now(),
     });
-  } catch (error: any) {
-    console.error("Sign up error:", error);
-    throw Error(error.message || "Something went wrong. Please try again.");
+  } catch (e) {
+    if (e instanceof Error) {
+      throw Error(e.message || "Something went wrong. Please try again.");
+    } else {
+      console.error("Unknown sign up error:", e);
+    }
   }
 };
 

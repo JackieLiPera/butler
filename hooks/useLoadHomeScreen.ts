@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import * as Location from "expo-location";
 import { checkAccountCompleted, loadUser, subscribeToRequests } from "../utils";
-import { Profile } from "../types/profile";
-import { Request } from "../types/request";
+import type { Profile, Request } from "../types";
 
 export const useLoadHomeScreen = () => {
   const [ready, setReady] = useState(false);

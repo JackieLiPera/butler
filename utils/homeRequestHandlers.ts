@@ -10,9 +10,8 @@ import {
   where,
 } from "firebase/firestore";
 import { auth, db } from "../firebase/config";
-import { Request } from "../types/request";
-import { Profile, UserData } from "../types/profile";
 import { serializeUser } from "./user";
+import type { Profile, UserData, Request } from "../types";
 
 export const acceptRequest = async (request: Request) => {
   try {

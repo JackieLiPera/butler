@@ -10,7 +10,7 @@ import {
 import Slider from "@react-native-community/slider";
 import { Ionicons } from "@expo/vector-icons";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../types/navigation";
+import type { RootStackParamList } from "../types";
 import { ONE_MILE_IN_METERS } from "../constants";
 import {
   pickImage,

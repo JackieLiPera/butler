@@ -1,4 +1,3 @@
-import { ReactNode } from "react";
 import {
   GestureResponderEvent,
   Pressable,
@@ -9,12 +8,17 @@ import {
 export const OutlinedButton = ({
   text,
   onPress,
+  disabled = false,
 }: {
   text: string;
   onPress: (event: GestureResponderEvent) => void;
+  disabled?: boolean;
 }) => {
   return (
-    <Pressable style={styles.outlinedButton} onPress={onPress}>
+    <Pressable
+      style={() => [styles.outlinedButton, disabled && styles.disabled]}
+      onPress={onPress}
+    >
       <Text style={styles.outlinedButtonText}>{text}</Text>
     </Pressable>
   );
@@ -34,5 +38,9 @@ const styles = StyleSheet.create({
   outlinedButtonText: {
     fontSize: 16,
     fontWeight: "500",
+  },
+  disabled: {
+    color: "#ccc",
+    opacity: 0.3,
   },
 });

@@ -1,5 +1,5 @@
 import { Timestamp } from "firebase/firestore";
-import { UserData, Profile } from "../types/profile";
+import type { UserData, Profile } from "../types";
 
 export const serializeUser = (user: UserData, uid: string): Profile => {
   return {

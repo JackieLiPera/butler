@@ -10,7 +10,6 @@ import {
   Platform,
   TouchableWithoutFeedback,
 } from "react-native";
-import { RootStackParamList } from "../types/navigation";
 import { errorMap, signIn } from "../utils";
 import { APP_NAME } from "../constants";
 import { useNavigation } from "@react-navigation/native";
@@ -21,6 +20,7 @@ import {
   InputText,
   ErrorText,
 } from "../components";
+import type { RootStackParamList } from "../types";
 
 export default function SignInScreen() {
   const navigation =
@@ -77,7 +77,7 @@ export default function SignInScreen() {
           ) : (
             <>
               {isSignUp ? (
-                <SignUpScreen />
+                <SignUpScreen setIsSignUp={setIsSignUp} />
               ) : (
                 <>
                   <HeaderText>Sign in to {APP_NAME}</HeaderText>
@@ -114,20 +114,23 @@ export default function SignInScreen() {
                   />
 
                   {error ? <ErrorText>{error}</ErrorText> : null}
-
-                  <OutlinedButton onPress={handleSignIn} text="Sign In" />
+                  <OutlinedButton
+                    onPress={handleSignIn}
+                    text="Sign In"
+                    disabled={!email || !password || Boolean(error)}
+                  />
+                  <Pressable
+                    onPress={() => {
+                      setIsSignUp(null);
+                      setEmail("");
+                      setPassword("");
+                      setError("");
+                    }}
+                  >
+                    <Text style={styles.navButton}>← Back</Text>
+                  </Pressable>
                 </>
               )}
-              <Pressable
-                onPress={() => {
-                  setIsSignUp(null);
-                  setEmail("");
-                  setPassword("");
-                  setError("");
-                }}
-              >
-                <Text style={styles.back}>← Back</Text>
-              </Pressable>
             </>
           )}
         </View>
@@ -140,7 +143,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center",
     padding: 24,
     backgroundColor: "#fff",
   },
@@ -148,10 +150,12 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: "700",
     marginBottom: 48,
+    alignSelf: "center",
   },
-  back: {
-    color: "#000",
-    marginVertical: 16,
+  navButton: {
+    marginTop: 24,
     fontSize: 16,
+    fontWeight: "500",
+    color: "black",
   },
 });

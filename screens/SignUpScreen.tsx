@@ -1,7 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useCallback, useState } from "react";
-import { RootStackParamList } from "../types/navigation";
+import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { checkUsernameAvailability, signUp } from "../utils";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { APP_NAME } from "../constants";
@@ -13,7 +12,9 @@ import {
   DateField,
   InputText,
   ErrorText,
+  OutlinedButton,
 } from "../components";
+import type { RootStackParamList } from "../types";
 
 const fieldsMapper: Record<number, Set<string>> = {
   1: new Set(["email", "username"]),
@@ -21,7 +22,11 @@ const fieldsMapper: Record<number, Set<string>> = {
   3: new Set([]),
 };
 
-export default function SignUpScreen() {
+export default function SignUpScreen({
+  setIsSignUp,
+}: {
+  setIsSignUp: Dispatch<SetStateAction<boolean | null>>;
+}) {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -69,11 +74,17 @@ export default function SignUpScreen() {
   }, [email, username, firstName, lastName, birthday]);
 
   const handleBack = () => {
-    if (step < 1 || step > 3) {
+    if (step > 3) {
       console.error("Step out of range");
     }
     setError("");
-    setStep(step - 1);
+    if (step === 1) {
+      setUsername("");
+      setEmail("");
+      setIsSignUp(null);
+    } else {
+      setStep(step - 1);
+    }
   };
 
   const handleCheckUsernameAvailability = useCallback(
@@ -286,34 +297,32 @@ export default function SignUpScreen() {
       {error ? <ErrorText>{error}</ErrorText> : null}
 
       <View style={styles.nav}>
-        {step > 1 && (
-          <Pressable onPress={handleBack}>
-            <Text style={styles.navButton}>← Back</Text>
-          </Pressable>
-        )}
-        {step < 3 ? (
+        <Pressable onPress={handleBack}>
+          <Text style={styles.navButton}>← Back</Text>
+        </Pressable>
+        {step < 3 && (
           <Pressable onPress={handleNext}>
             <Text style={styles.navButton}>Next →</Text>
           </Pressable>
-        ) : (
-          <Pressable
-            style={() => [Boolean(error) && styles.buttonDisabled]}
-            onPress={handleSignUp}
-            disabled={Boolean(error)}
-          >
-            <Text style={styles.navButton}>Create Account</Text>
-          </Pressable>
         )}
       </View>
+      {step === 3 && (
+        <OutlinedButton
+          onPress={handleSignUp}
+          text="Create Account"
+          disabled={Boolean(error)}
+        />
+      )}
     </>
   );
 }
 
 const styles = StyleSheet.create({
   nav: {
+    marginVertical: 24,
+    display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 24,
   },
   navButton: {
     fontSize: 16,
@@ -327,9 +336,5 @@ const styles = StyleSheet.create({
     color: "#666",
     flexDirection: "row",
     alignItems: "center",
-  },
-  buttonDisabled: {
-    color: "#ccc",
-    opacity: 0.3,
   },
 });
