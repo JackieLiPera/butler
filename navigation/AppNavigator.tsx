@@ -16,7 +16,6 @@ export default function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName={auth.currentUser ? "Home" : "SignIn"}>
-        {/* <Stack.Navigator initialRouteName={"Home"}> */}
         <Stack.Screen name="SignIn" component={SignInScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="CreateRequest" component={CreateRequestScreen} />

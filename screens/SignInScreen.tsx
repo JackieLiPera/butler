@@ -14,12 +14,7 @@ import { errorMap, signIn } from "../utils";
 import { APP_NAME } from "../constants";
 import { useNavigation } from "@react-navigation/native";
 import SignUpScreen from "./SignUpScreen";
-import {
-  HeaderText,
-  OutlinedButton,
-  InputText,
-  ErrorText,
-} from "../components";
+import { HeaderText, Button, InputText, ErrorText } from "../components";
 import type { RootStackParamList } from "../types";
 
 export default function SignInScreen() {
@@ -65,11 +60,13 @@ export default function SignInScreen() {
           {isSignUp === null ? (
             <>
               <Text style={styles.logo}>{APP_NAME}</Text>
-              <OutlinedButton
+              <Button
+                variation="outlined"
                 text={"Sign In"}
                 onPress={() => setIsSignUp(false)}
               />
-              <OutlinedButton
+              <Button
+                variation="outlined"
                 text={"Sign Up"}
                 onPress={() => setIsSignUp(true)}
               />
@@ -114,10 +111,11 @@ export default function SignInScreen() {
                   />
 
                   {error ? <ErrorText>{error}</ErrorText> : null}
-                  <OutlinedButton
+                  <Button
                     onPress={handleSignIn}
                     text="Sign In"
                     disabled={!email || !password || Boolean(error)}
+                    variation="outlined"
                   />
                   <Pressable
                     onPress={() => {

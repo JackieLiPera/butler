@@ -24,6 +24,9 @@ import {
   Platform,
   TouchableWithoutFeedback,
 } from "react-native";
+import { Button, HeaderText } from "../components";
+import { auth } from "../firebase/config";
+import Toast from "react-native-toast-message";
 
 type CreateRequestScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -42,8 +45,34 @@ export default function CreateRequestScreen({
   const [error, setError] = useState("");
 
   const handleCreateRequest = useCallback(async () => {
-    await createRequest({ requestText, radiusMeters, payment, imageUri });
-  }, [requestText, radiusMeters, payment]);
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      setError("You must be logged in to create a request.");
+      return;
+    }
+    try {
+      await createRequest({
+        requestText,
+        radiusMeters,
+        payment,
+        imageUri,
+        requesterUid: currentUser.uid,
+      });
+      navigation.navigate("Home", {
+        toast: {
+          type: "success",
+          text1: "Request Created",
+          text2: "Track your request on the Request History page.",
+        },
+      });
+    } catch (e) {
+      if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError("An unknown error occurred.");
+      }
+    }
+  }, [auth.currentUser, requestText, radiusMeters, payment]);
 
   const handlePickImage = useCallback(async () => {
     await pickImage({ setImageUri });
@@ -64,7 +93,7 @@ export default function CreateRequestScreen({
             >
               <Ionicons name="chevron-back" size={28} color="#000" />
             </Pressable>
-            <Text style={styles.headerText}>Create a Request</Text>
+            <HeaderText>Create a Request</HeaderText>
           </View>
           <TextInput
             style={styles.textInput}
@@ -123,15 +152,12 @@ export default function CreateRequestScreen({
           </Pressable>
 
           <View style={styles.buttonContainer}>
-            <Pressable
+            <Button
               onPress={handleCreateRequest}
-              style={({ pressed }) => [
-                styles.buttonPressable,
-                pressed && { transform: [{ scale: pressed ? 0.95 : 1 }] },
-              ]}
-            >
-              <Text style={styles.buttonText}>Submit Request</Text>
-            </Pressable>
+              text="Submit Request"
+              variation="filled"
+              disabled={Boolean(error) || !requestText}
+            />
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -181,35 +207,17 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   buttonContainer: {
-    position: "absolute",
+    position: "static",
     bottom: 40,
     left: 20,
     right: 20,
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  buttonPressable: {
-    backgroundColor: "black",
-    paddingVertical: 16,
-    alignItems: "center",
-    borderRadius: 12,
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "600",
   },
   headerRow: {
     flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
+    alignItems: "flex-start",
   },
   backButton: {
     marginRight: 8,
-  },
-  headerText: {
-    fontSize: 28,
-    fontWeight: "600",
   },
   charCount: {
     textAlign: "right",

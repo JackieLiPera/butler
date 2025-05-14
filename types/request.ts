@@ -3,7 +3,7 @@ import { Profile } from "./profile";
 
 export interface Request {
   acceptedAt?: Date | null;
-  user: Profile;
+  acceptedUser?: Profile;
   duration?: number;
   requestText: string;
   createdAt: Timestamp;

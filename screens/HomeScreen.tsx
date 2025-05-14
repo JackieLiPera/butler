@@ -9,20 +9,25 @@ import * as Haptics from "expo-haptics";
 import { acceptRequest, mapStyle } from "../utils";
 import { useLoadHomeScreen } from "../hooks/useLoadHomeScreen";
 import { Picker } from "@react-native-picker/picker";
-import { Banner, BottomNav } from "../components";
+import { Banner, BottomNav, Button } from "../components";
 import Toast from "react-native-toast-message";
 import type { RootStackParamList, Request } from "../types";
+import { RouteProp, useFocusEffect, useRoute } from "@react-navigation/native";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   "Home"
 >;
 
+type Route = RouteProp<RootStackParamList, "Home">;
+
 export default function HomeScreen({
   navigation,
 }: {
   navigation: HomeScreenNavigationProp;
 }) {
+  const route = useRoute<Route>();
+  const { toast } = route.params || {};
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [warningBanner, setWarningBanner] = useState<string>("");
   const [errorBanner, setErrorBanner] = useState<string>("");
@@ -40,20 +45,40 @@ export default function HomeScreen({
     if (warning) {
       setWarningBanner(error);
     }
-  }, [error, warning]);
+  }, [error, warning, route.params]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (toast) {
+        Toast.show({
+          type: toast.type,
+          text1: toast.text1,
+          text2: toast.text2,
+          visibilityTime: 5000,
+          position: "top",
+          topOffset: 150,
+        });
+        navigation.setParams({ toast: undefined });
+      }
+    }, [route.params?.toast])
+  );
 
   const handleAccept = useCallback(async (request: Request) => {
     try {
       if (user) {
         await acceptRequest({
           ...request,
-          user,
+          acceptedUser: user,
           duration: durationMinutes,
         });
+
         Toast.show({
           type: "success",
-          text1: "Request accepted",
-          text2: "Please complete the task in the expected duration.",
+          text1: "Request Accepted",
+          text2: "Track the request on the Request History page.",
+          visibilityTime: 5000,
+          position: "top",
+          topOffset: 150,
         });
         setSelectedRequest(null);
         setPendingRequest(null);
@@ -201,7 +226,7 @@ export default function HomeScreen({
           {pendingRequest && (
             <>
               <Text style={styles.calloutText}>
-                Provide an estimate to complete the request.
+                Estimated time to complete the request:
               </Text>
               <Picker
                 selectedValue={durationMinutes}
@@ -222,8 +247,8 @@ export default function HomeScreen({
               </Picker>
             </>
           )}
-          <Pressable
-            style={styles.acceptButton}
+          <Button
+            variation="filled"
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
               if (pendingRequest) {
@@ -232,17 +257,12 @@ export default function HomeScreen({
                 setPendingRequest(selectedRequest);
               }
             }}
-          >
-            <Text style={styles.acceptButtonText}>
-              {pendingRequest ? "Submit" : "Accept Request"}
-            </Text>
-          </Pressable>
+            text={pendingRequest ? "Submit" : "Accept Request"}
+          />
         </View>
       )}
 
       <BottomNav user={user} />
-
-      <Toast />
     </View>
   );
 }

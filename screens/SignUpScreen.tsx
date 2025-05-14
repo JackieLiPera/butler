@@ -12,7 +12,7 @@ import {
   DateField,
   InputText,
   ErrorText,
-  OutlinedButton,
+  Button,
 } from "../components";
 import type { RootStackParamList } from "../types";
 
@@ -307,7 +307,8 @@ export default function SignUpScreen({
         )}
       </View>
       {step === 3 && (
-        <OutlinedButton
+        <Button
+          variation="outlined"
           onPress={handleSignUp}
           text="Create Account"
           disabled={Boolean(error)}

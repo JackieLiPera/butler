@@ -12,13 +12,15 @@ import {
 import { auth, db } from "../firebase/config";
 import { serializeUser } from "./user";
 import type { Profile, UserData, Request } from "../types";
+import Toast from "react-native-toast-message";
 
 export const acceptRequest = async (request: Request) => {
   try {
-    await updateDoc(doc(db, "requests", request.id), {
-      user: request.user,
+    const { id, acceptedUser, duration } = request;
+    await updateDoc(doc(db, "requests", id), {
+      acceptedUser,
       acceptedAt: Timestamp.now(),
-      duration: request.duration,
+      duration,
     });
   } catch (e) {
     throw Error(

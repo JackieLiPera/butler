@@ -37,11 +37,13 @@ export const createRequest = async ({
   radiusMeters,
   payment,
   imageUri,
+  requesterUid,
 }: {
   requestText: string;
   radiusMeters: number;
   payment: string;
   imageUri: string | null;
+  requesterUid: string;
 }) => {
   const { status } = await Location.requestForegroundPermissionsAsync();
   if (status !== "granted") {
@@ -68,6 +70,7 @@ export const createRequest = async ({
   }
 
   const requestData = {
+    requesterUid,
     requestText,
     radius: {
       meters: radiusMeters,
@@ -84,10 +87,9 @@ export const createRequest = async ({
 
   try {
     await addDoc(collection(db, "requests"), requestData);
-    alert("Request submitted!");
   } catch (error) {
-    console.error("Error adding document:", error);
-    alert("Something went wrong. Please try again.");
+    console.error(`Error creating the request: ${error}`);
+    throw Error("There was an error creating the request");
   }
 };
 
