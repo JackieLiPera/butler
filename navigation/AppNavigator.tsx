@@ -9,6 +9,7 @@ import { auth } from "../firebase/config";
 import ManageAccountScreen from "../screens/ManageAccountScreen";
 import HistoryScreen from "../screens/HistoryScreen";
 import SettingsScreen from "../screens/SettingsScreen";
+import PrivacyPolicyScreen from "../screens/PrivacyPolicyScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -23,6 +24,7 @@ export default function AppNavigator() {
         <Stack.Screen name="ManageAccount" component={ManageAccountScreen} />
         <Stack.Screen name="History" component={HistoryScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
+        <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
