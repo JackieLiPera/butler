@@ -67,7 +67,7 @@ export default function AccountScreen() {
     routeProps?: any;
   }[] = [
     { label: "Manage Account", route: "ManageAccount", routeProps: { user } },
-    { label: "Request History", route: "History" },
+    { label: "Request History", route: "History", routeProps: { user } },
     { label: "Settings", route: "Settings", routeProps: { user } },
     { label: "Privacy Policy", route: "PrivacyPolicy" },
     { label: "Log Out", onPress: handleLogout },
@@ -83,7 +83,7 @@ export default function AccountScreen() {
           style={{ marginRight: 8 }}
         />
         <Text style={styles.username}>
-          {account?.username || "ManageAccount"}
+          {account?.username || "Your Account"}
         </Text>
       </View>
       {items.map(({ label, description, route, onPress, routeProps }) => (

@@ -10,6 +10,8 @@ import ManageAccountScreen from "../screens/ManageAccountScreen";
 import HistoryScreen from "../screens/HistoryScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import PrivacyPolicyScreen from "../screens/PrivacyPolicyScreen";
+import RequestsCreatedScreen from "../screens/RequestsCreatedScreen";
+import RequestsAcceptedScreen from "../screens/RequestsAcceptedScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +27,14 @@ export default function AppNavigator() {
         <Stack.Screen name="History" component={HistoryScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+        <Stack.Screen
+          name="RequestsCreated"
+          component={RequestsCreatedScreen}
+        />
+        <Stack.Screen
+          name="RequestsAccepted"
+          component={RequestsAcceptedScreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
