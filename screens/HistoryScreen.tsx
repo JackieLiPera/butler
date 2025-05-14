@@ -61,6 +61,7 @@ export default function HistoryScreen() {
         onPress={() => {
           navigation.navigate("RequestsAccepted", {
             requests: data.acceptedRequests,
+            user,
           });
         }}
       />

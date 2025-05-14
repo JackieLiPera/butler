@@ -10,7 +10,7 @@ export type RootStackParamList = {
   };
   ManageAccount: { user: Profile | null };
   PrivacyPolicy: undefined;
-  RequestsAccepted: { requests: Request[] };
+  RequestsAccepted: { requests: Request[]; user: Profile | null };
   RequestsCreated: { requests: Request[]; user: Profile | null };
   Settings: { user: Profile | null };
   SignIn: undefined;
