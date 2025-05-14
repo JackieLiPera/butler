@@ -4,6 +4,7 @@ import { Profile } from "./profile";
 export interface Request {
   acceptedAt?: Date | null;
   acceptedUser?: Profile;
+  completedAt?: Timestamp;
   duration?: number;
   requestText: string;
   createdAt: Timestamp;

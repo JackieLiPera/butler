@@ -11,7 +11,7 @@ export type RootStackParamList = {
   ManageAccount: { user: Profile | null };
   PrivacyPolicy: undefined;
   RequestsAccepted: { requests: Request[] };
-  RequestsCreated: { requests: Request[] };
+  RequestsCreated: { requests: Request[]; user: Profile | null };
   Settings: { user: Profile | null };
   SignIn: undefined;
 };

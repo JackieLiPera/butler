@@ -18,14 +18,16 @@ export const Banner = ({
   text: string;
   type: BannerType;
   callback?: (event: GestureResponderEvent) => void;
-  children: ReactNode;
+  children?: ReactNode;
 }) => {
   return (
     <View style={[styles.container, styles[type]]}>
       <Text style={styles.bannerText}>{text}</Text>
-      <Pressable style={styles.link} onPress={callback}>
-        {children}
-      </Pressable>
+      {children && (
+        <Pressable style={styles.link} onPress={callback}>
+          {children}
+        </Pressable>
+      )}
     </View>
   );
 };
@@ -52,8 +54,7 @@ const styles = StyleSheet.create({
     borderLeftColor: "#ffcc00",
   },
   success: {
-    //TODO
-    backgroundColor: "green",
+    backgroundColor: "#f0fdf4",
   },
   bannerText: {
     color: "#333",

@@ -24,6 +24,17 @@ export const BottomNav = ({ user }: { user: Profile | null }) => {
         <Text>Home</Text>
       </Pressable>
       <Pressable
+        onPress={() => navigation.navigate("History", { user })}
+        style={styles.button}
+      >
+        <Ionicons
+          name={isActive("History") ? "chatbox" : "chatbox-outline"}
+          size={28}
+          color={isActive("History") ? "#000" : "#999"}
+        />
+        <Text>Requests</Text>
+      </Pressable>
+      <Pressable
         onPress={() => navigation.navigate("Account", { user })}
         style={styles.button}
       >

@@ -37,3 +37,4 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+scripts/firebase-service-account*

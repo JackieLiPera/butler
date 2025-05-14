@@ -12,7 +12,6 @@ import { auth, db } from "../firebase/config";
 import type { Request } from "../types";
 
 export const useLoadHistoryScreen = () => {
-  console.log("hi");
   const [acceptedRequests, setAcceptedRequests] = useState<Request[]>([]);
   const [createdRequests, setCreatedRequests] = useState<Request[]>([]);
   const [error, setError] = useState<string>("");
@@ -57,6 +56,7 @@ export const useLoadHistoryScreen = () => {
         setCreatedRequests(createdRequestData);
         setAcceptedRequests(acceptedRequestsData);
       } catch (e) {
+        console.error(e);
         if (e instanceof Error) {
           setError(e.message);
         } else {

@@ -6,13 +6,13 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { acceptRequest, mapStyle } from "../utils";
+import { acceptRequest, getDistanceInMiles, mapStyle } from "../utils";
 import { useLoadHomeScreen } from "../hooks/useLoadHomeScreen";
 import { Picker } from "@react-native-picker/picker";
 import { Banner, BottomNav, Button } from "../components";
 import Toast from "react-native-toast-message";
-import type { RootStackParamList, Request } from "../types";
 import { RouteProp, useFocusEffect, useRoute } from "@react-navigation/native";
+import type { RootStackParamList, Request } from "../types";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -221,7 +221,12 @@ export default function HomeScreen({
           )}
           <Text style={styles.panelDetail}>
             Distance:{" "}
-            {(selectedRequest.radius.meters / ONE_MILE_IN_METERS).toFixed(1)} mi
+            {getDistanceInMiles(
+              location.coords.latitude,
+              location.coords.longitude,
+              selectedRequest.location.latitude,
+              selectedRequest.location.longitude
+            ).toFixed(1)}{" "}
           </Text>
           {pendingRequest && (
             <>
@@ -314,6 +319,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 8,
+    maxWidth: "90%",
   },
   panelDetail: {
     fontSize: 14,

@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Pressable } from "react-native";
-import { BottomNav, HeaderText } from "../components";
+import { Banner, BottomNav, HeaderText } from "../components";
 import { Ionicons } from "@expo/vector-icons";
 import { RootStackParamList } from "../types";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
@@ -34,12 +34,11 @@ export default function HistoryScreen() {
 
   const { error, data } = useLoadHistoryScreen();
 
-  // TODO do something with error
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Ionicons
-          name="chatbox-ellipses-outline"
+          name="chatbox-outline"
           size={32}
           color="#333"
           style={{ marginRight: 8 }}
@@ -52,6 +51,7 @@ export default function HistoryScreen() {
         onPress={() => {
           navigation.navigate("RequestsCreated", {
             requests: data.createdRequests,
+            user,
           });
         }}
       />
@@ -64,6 +64,8 @@ export default function HistoryScreen() {
           });
         }}
       />
+
+      {error && <Banner text={error} type="error" />}
       <BottomNav user={user} />
     </View>
   );
