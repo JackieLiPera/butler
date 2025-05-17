@@ -13,18 +13,42 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.jackielipera.butler",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "We use your location to show nearby requests.",
+        "NSCameraUsageDescription": "This app uses your camera to take photos for requests and ID uploads.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to let you upload images."
+      }
     },
+    "plugins": [
+      "expo-location",
+      "expo-image-picker"
+    ],
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.jackielipera.butler"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "jsEngine": "jsc"
+    "jsEngine": "jsc",
+    "extra": {
+      "eas": {
+        "projectId": "bcd7ea07-c9ed-4a95-a469-c9041d2e9d7b"
+      }
+    },
+    "owner": "jackielipera",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/bcd7ea07-c9ed-4a95-a469-c9041d2e9d7b"
+    }
   }
 }
